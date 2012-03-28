@@ -2,9 +2,6 @@
 layout: default
 ---
 
-
-<section id="about">
-
 ## About
 
 nvd3.js is an attempt to build reusable chart components for d3.js without
@@ -17,10 +14,6 @@ be doing our best to produce reusable charts ready for a production environment.
 We appreciate any help, whether you're a JavaScript maniac, or a random user who 
 can point out a bug or two.
 
-</section>
-
-
-<section id="charts">
 
 ## Charts
 
@@ -31,16 +24,10 @@ can point out a bug or two.
 - [Scatterplot](examples/scatterWithLegend.html)
 - [Simple Bar](examples/bar.html)
 
-</section>
 
 
-
-<section id="resources">
 
 ## Resources
 
 For now you'll have to use the examples, and the resources provided by [d3.js](http://mbostock.github.com/d3/api/).
-
-</section>
-
 
