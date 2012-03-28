@@ -221,17 +221,14 @@ header nav a {
   display: inline-block;
   width: 180px;
   font-weight: bold;
-}
-
-header nav a.active {
-  text-decoration: none;
+  color: #000;
 }
 
 header h1 {
   color: #669;
 }
 
-header h1.strong {
+header h1 strong {
   color: #000;
 }
 
