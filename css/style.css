@@ -211,10 +211,41 @@ td { vertical-align: top; }
    Author: 
    ========================================================================== */
 
+header {
+  width: 800px;
+  margin: 10px auto 20px;
+  text-align: middle;
+}
 
+header nav a {
+  display: inline-block;
+  width: 200px;
+  font-weight: bold;
+}
 
+header nav a.active {
+  text-decoration: none;
+}
 
+header h1 {
+  color: #669;
+}
 
+header h1.strong {
+  color: #000;
+}
+
+#main {
+  width: 800px;
+  margin: 20px auto;
+}
+
+footer {
+  width: 800px;
+  margin: 10px auto 0;
+  text-align: right;
+  color: #999;
+}
 
 
 

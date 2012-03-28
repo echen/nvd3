@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <title>nvd3.js{% if page.title %} ~ {{ page.title }}{% endif %}</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript" src="lib/d3.v2.js?2.8.1"></script>
+    <script type="text/javascript" src="nv.d3.js"></script>
+
+  </head>
+  <body>
+
+    <div id="wrap">
+      <header>
+        <nav>
+          <a href="#about">About</a>
+          <a href="#charts">Charts</a>
+          <a href="#resources">Resources</a>
+          <a href="http://github.com/novus/nvd3/archives/master">Download</a>
+        </nav>
+        <h1>nv<strong>d3.js</strong></h1>
+        <h3>Reusable charts powered by <a href="http://mbostock.github.com/d3/">d3.js</a>.</h3>
+      </header>
+      <div id="main">
+
+{{ content }}
+
+      </div>
+      <footer>The easy stuff is by Bob Monteverde of <a href="http://www.novus.com">Novus Partners</a>, the real power is thanks to the people behind <a href="http://mbostock.github.com/d3/">d3.js</a></footer>
+    </div>
+
+    <a href="http://github.com/novus/nvd3"><img
+      style="position:absolute;top:0;right:0;border:0;"
+      width="149" height="149" src="images/forkme.png" alt="Fork me on GitHub"
+      /></a>
+
+  </body>
+</html>
