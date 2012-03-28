@@ -217,11 +217,12 @@ header {
   text-align: middle;
 }
 
-header nav a {
+header nav a,
+header nav a:visited {
   display: inline-block;
   width: 180px;
   font-weight: bold;
-  color: #000;
+  color: #000 !important;
 }
 
 header h1 {
