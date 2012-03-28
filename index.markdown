@@ -5,7 +5,7 @@ layout: default
 
 <section id="about">
 
-##About
+## About
 
 nvd3.js is an attempt to build reusable chart components for d3.js without
 ruining the essense behind d3.js. This is a very young collection of components,
@@ -22,7 +22,7 @@ can point out a bug or two.
 
 <section id="charts">
 
-##Charts
+## Charts
 
 - [Simple Line](examples/lineWithLegend.html)
 - [Zoomable Line](examples/lineWithFocus.html)
@@ -37,7 +37,7 @@ can point out a bug or two.
 
 <section id="resources">
 
-##Resources
+## Resources
 
 For now you'll have to use the examples, and the resources provided by [d3.js](http://mbostock.github.com/d3/api/).
 
