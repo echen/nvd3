@@ -17,7 +17,7 @@ can point out a bug or two.
 
 ## Charts
 
-- [Simple Line](examples/lineWithLegend.html)
+- [Simple Line](examples/simpleLine.html)
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)

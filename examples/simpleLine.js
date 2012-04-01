@@ -6,7 +6,7 @@ var width = function() { return $(window).width() - 40 },
     container = d3.select('#chart svg');
 
 chart
-    .width(width)
+    .width(width())
     .height(height);
 
 chart.xAxis
@@ -41,9 +41,13 @@ function tooltipShow(e) {
 
 
 function resizeChart() {
-  chart.width(width());
+  chart
+     .width(width())
+     .height(height);
 
-  container.call(chart);
+  container
+    .attr('width', width())
+    .call(chart);
 };
 
 
