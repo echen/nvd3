@@ -249,6 +249,11 @@ header h1 strong {
   text-align: left;
 }
 
+#exampleMain .highlight {
+  width: 800px;
+  margin-right: 3em;
+}
+
 footer {
   width: 800px;
   margin: 10px auto 0;
