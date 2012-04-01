@@ -5,6 +5,7 @@ var width = function() { return $(window).width() - 40 },
     chart = nv.models.lineWithLegend(),
     container = d3.select('#chart svg');
 
+
 chart
     .width(width())
     .height(height);
@@ -30,11 +31,12 @@ container.transition().duration(500).call(chart);
 function tooltipShow(e) {
   var offset = $('#chart').offset(),
       left = e.pos[0] + offset.left,
-      top = e.pos[1] + offset.top;
+      top = e.pos[1] + offset.top,
+      content;
 
-  var content = '<h3>' + e.series.key + '</h3>' +
-                '<p>' + chart.yAxis.tickFormat()(chart.y()(e.point)) + 'v at ' +
-                chart.xAxis.tickFormat()(chart.x()(e.point)) + 'ms</p>';
+  content = '<h3>' + e.series.key + '</h3>' +
+            '<p>' + chart.yAxis.tickFormat()(chart.y()(e.point)) + 'v at ' +
+            chart.xAxis.tickFormat()(chart.x()(e.point)) + 'ms</p>';
 
   nvtooltip.show([left, top], content);
 }
@@ -42,12 +44,12 @@ function tooltipShow(e) {
 
 function resizeChart() {
   chart
-     .width(width())
-     .height(height);
+      .width(width())
+      .height(height);
 
   container
-    .attr('width', width())
-    .call(chart);
+      .attr('width', width())
+      .call(chart);
 };
 
 
@@ -77,13 +79,13 @@ function sinAndCos() {
   return [
     {
       values: sin,
-      key: "Sine Wave",
-      color: "#ff7f0e"
+      key: 'Sine Wave',
+      color: '#ff7f0e'
     },
     {
       values: cos,
-      key: "Cosine Wave",
-      color: "#2ca02c"
+      key: 'Cosine Wave',
+      color: '#2ca02c'
     }
   ];
 }
