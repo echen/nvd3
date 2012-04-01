@@ -1,5 +1,5 @@
 
-var width = function() { return $(window).width() - 40 };
+var width = function() { return $(window).width() - 20 };
     height = function() { return 500 },
     xFormat = d3.format(',r'),
     yFormat = d3.format('.02f');
@@ -30,7 +30,7 @@ chart.dispatch.on('tooltipShow', function(e) {
 
   var content = '<h3>' + e.series.key + '</h3>' +
                 '<p>' +
-                chart.yAxis.tickFormat()(e.point) + ' on ' + chart.xAxis.tickFormat()(e.point) +
+                chart.yAxis.tickFormat()(chart.x()(e.point)) + ' on ' + chart.xAxis.tickFormat()(chart.y()(e.point)) +
                 '</p>';
 
   nvtooltip.show([left, top], content);

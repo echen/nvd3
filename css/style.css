@@ -238,8 +238,14 @@ header h1 strong {
   margin: 20px auto;
 }
 
+#exampleMain {
+  margin: 20px;
+}
+
 #exampleMain h2,
 #exampleMain h3 {
+  width: 800px;
+  margin: 10px auto;
   text-align: center;
 }
 
