@@ -16,7 +16,7 @@ var chart = nv.models.lineWithLegend()
 
 var svg = d3.select('#chart svg')
             .attr('width', width())
-            .attr('height', height)
+            .attr('height', height())
             .datum(sinAndCos())
 
 svg.transition().duration(500).call(chart);
@@ -47,7 +47,7 @@ $(window).resize(function() {
      .width(width())
      .height(height());
 
-  d3.select('#test1 svg')
+  d3.select('#chart svg')
     .attr('width', width())
     .attr('height', height())
     .call(chart);
