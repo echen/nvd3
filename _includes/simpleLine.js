@@ -1,59 +1,62 @@
-
-var width = function() { return $(window).width() - 20 };
+var width = function() { return $(window).width() - 20 },
     height = function() { return 500 },
     xFormat = d3.format(',r'),
-    yFormat = d3.format('.02f');
+    yFormat = d3.format('.02f'),
+    chart = nv.models.lineWithLegend(),
+    container = d3.select('#chart svg');
 
-var chart = nv.models.lineWithLegend()
-            .width(width())
-            .height(height());
+chart
+    .width(width())
+    .height(height());
 
-    chart.yAxis.axisLabel('Voltage (v)');
-    chart.xAxis.axisLabel('Time (ms)');
+chart.xAxis
+    .axisLabel('Time (ms)')
+    .tickFormat(xFormat);
 
-    chart.xAxis.tickFormat(xFormat);
-    chart.yAxis.tickFormat(yFormat);
-
-var svg = d3.select('#chart svg')
-            .attr('width', width())
-            .attr('height', height())
-            .datum(sinAndCos())
-
-svg.transition().duration(500).call(chart);
+chart.yAxis
+    .axisLabel('Voltage (v)')
+    .tickFormat(yFormat);
 
 
+container
+    .attr('width', width())
+    .attr('height', height())
+    .datum(sinAndCos());
 
-chart.dispatch.on('tooltipShow', function(e) {
+container.transition().duration(500).call(chart);
+
+
+
+function tooltipShow(e) {
   var offset = $('#chart').offset(),
       left = e.pos[0] + offset.left,
       top = e.pos[1] + offset.top;
 
   var content = '<h3>' + e.series.key + '</h3>' +
-                '<p>' +
-                chart.yAxis.tickFormat()(chart.y()(e.point)) +
-                ' on ' +
-                chart.xAxis.tickFormat()(chart.x()(e.point)) +
-                '</p>';
+                '<p>' + chart.yAxis.tickFormat()(chart.y()(e.point)) + 'v at ' +
+                chart.xAxis.tickFormat()(chart.x()(e.point)) + 'ms</p>';
 
   nvtooltip.show([left, top], content);
-});
-
-chart.dispatch.on('tooltipHide', function(e) {
-  nvtooltip.cleanup();
-});
+}
 
 
-// Pretty standard graph resize
-$(window).resize(function() {
+function resizeChart() {
   chart
      .width(width())
      .height(height());
 
-  d3.select('#chart svg')
+  container
     .attr('width', width())
     .attr('height', height())
     .call(chart);
-});
+};
+
+
+
+// Bind event handlers to their events
+chart.dispatch.on('tooltipShow', tooltipShow);
+chart.dispatch.on('tooltipHide', nvtooltip.cleanup);
+$(window).resize(resizeChart)
 
 
 
