@@ -6,8 +6,8 @@ title: Simple Line Chart
 ## Simple Line Chart
 
 <div id="chart">
-  <svg></svg>
+  <svg> </svg>
 </div>
 
-<script type="text/javascript" src="simpleLine.js"></script>
+<script type="text/javascript" src="simpleLine.js"> </script>
 
