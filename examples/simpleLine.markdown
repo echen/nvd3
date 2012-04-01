@@ -11,8 +11,3 @@ title: Simple Line Chart
 
 <script type="text/javascript" src="simpleLine.js"></script>
 
-### Source Code
-
-{% highlight js linenos %}
-{% include ../examples/simpleLine.js %}
-{% endhighlight %}
