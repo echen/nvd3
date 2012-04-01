@@ -1,13 +1,13 @@
-var width = function() { return $(window).width() - 20 },
-    height = function() { return 500 },
+var width = function() { return $(window).width() - 40 },
+    height = 500,
     xFormat = d3.format(',r'),
     yFormat = d3.format('.02f'),
     chart = nv.models.lineWithLegend(),
     container = d3.select('#chart svg');
 
 chart
-    .width(width())
-    .height(height());
+    .width(width)
+    .height(height);
 
 chart.xAxis
     .axisLabel('Time (ms)')
@@ -20,7 +20,7 @@ chart.yAxis
 
 container
     .attr('width', width())
-    .attr('height', height())
+    .attr('height', height)
     .datum(sinAndCos());
 
 container.transition().duration(500).call(chart);
@@ -41,14 +41,9 @@ function tooltipShow(e) {
 
 
 function resizeChart() {
-  chart
-     .width(width())
-     .height(height());
+  chart.width(width());
 
-  container
-    .attr('width', width())
-    .attr('height', height())
-    .call(chart);
+  container.call(chart);
 };
 
 
