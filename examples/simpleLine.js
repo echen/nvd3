@@ -1,8 +1,8 @@
 
 var width = function() { return $(window).width() - 40 };
     height = function() { return 500 },
-    xFormat = d3.format('.02f'),
-    yFormat = d3.format(',%');
+    xFormat = d3.format(',r'),
+    yFormat = d3.format('.02f');
 
 var chart = nv.models.lineWithLegend()
             .width(width())
@@ -11,8 +11,8 @@ var chart = nv.models.lineWithLegend()
     //chart.yAxis.axisLabel('Cumulative');
     //chart.xAxis.axisLabel('Date');
 
-    //chart.yAxis.tickFormat(yFormat);
-    //chart.xAxis.tickFormat(xFormat);
+    chart.yAxis.tickFormat(yFormat);
+    chart.xAxis.tickFormat(xFormat);
 
 var svg = d3.select('#chart svg')
             .attr('width', width())
@@ -41,7 +41,7 @@ chart.dispatch.on('tooltipHide', function(e) {
 });
 
 
-
+// Pretty standard graph resize
 $(window).resize(function() {
   chart
      .width(width())
