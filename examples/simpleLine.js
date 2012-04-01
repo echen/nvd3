@@ -11,8 +11,8 @@ var chart = nv.models.lineWithLegend()
     //chart.yAxis.axisLabel('Cumulative');
     //chart.xAxis.axisLabel('Date');
 
-    chart.yAxis.tickFormat(yFormat);
-    chart.xAxis.tickFormat(xFormat);
+    //chart.yAxis.tickFormat(yFormat);
+    //chart.xAxis.tickFormat(xFormat);
 
 var svg = d3.select('#chart svg')
             .attr('width', width())

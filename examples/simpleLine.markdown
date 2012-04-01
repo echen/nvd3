@@ -14,5 +14,5 @@ title: Simple Line Chart
 ### Source Code
 
 {% highlight js linenos %}
-{% include simpleLine.js %}
+{% include ../examples/simpleLine.js %}
 {% endhighlight %}
