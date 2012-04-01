@@ -246,7 +246,7 @@ header h1 strong {
 #exampleMain h3 {
   width: 800px;
   margin: 10px auto;
-  text-align: center;
+  text-align: left;
 }
 
 footer {

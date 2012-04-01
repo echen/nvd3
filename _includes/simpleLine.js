@@ -8,11 +8,11 @@ var chart = nv.models.lineWithLegend()
             .width(width())
             .height(height());
 
-    //chart.yAxis.axisLabel('Cumulative');
-    //chart.xAxis.axisLabel('Date');
+    chart.yAxis.axisLabel('Voltage (v)');
+    chart.xAxis.axisLabel('Time (ms)');
 
-    chart.yAxis.tickFormat(yFormat);
     chart.xAxis.tickFormat(xFormat);
+    chart.yAxis.tickFormat(yFormat);
 
 var svg = d3.select('#chart svg')
             .attr('width', width())
@@ -30,7 +30,9 @@ chart.dispatch.on('tooltipShow', function(e) {
 
   var content = '<h3>' + e.series.key + '</h3>' +
                 '<p>' +
-                chart.yAxis.tickFormat()(chart.x()(e.point)) + ' on ' + chart.xAxis.tickFormat()(chart.y()(e.point)) +
+                chart.yAxis.tickFormat()(chart.y()(e.point)) +
+                ' on ' +
+                chart.xAxis.tickFormat()(chart.x()(e.point)) +
                 '</p>';
 
   nvtooltip.show([left, top], content);
