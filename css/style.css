@@ -251,7 +251,7 @@ header h1 strong {
 
 #exampleMain .highlight {
   width: 800px;
-  margin-right: 3em;
+  margin: 10px auto 30px;
 }
 
 footer {
