@@ -22,6 +22,7 @@ can point out a bug or two.
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)
 - [Scatterplot](examples/scatterWithLegend.html)
+- [Stacked/Stream/Expanded Area](examples/stackedAreaWithLegend.html)
 - [Simple Bar](examples/bar.html)
 
 
