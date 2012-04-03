@@ -7,53 +7,15 @@ body {
   overflow-y:scroll;
 }
 
-#wrap {
-  width: 960px;
-}
-
-.chartWrap {
-  margin: 40px auto;
-  border: 1px solid #999;
-}
-
-.code {
-  margin: 0 20px;
-}
-
-#lineChart {
-  width: 960px;
-  height: 400px;
-}
-
-
-
-
 </style>
 <body>
 
-  <div id="wrap">
-    <div id="lineChart" class="chartWrap">
-      <svg></svg>
-    </div>
-
-    <div id="line-js" class="code">
-      <pre class="brush: js; toolbar: false; gutter: false">
-      </pre>
-    </div>
-
-  </div>
-
-
-<script src="../lib/jquery.min.js"></script>
-
-<script src="../js/libs/sh/shCore.js"></script>
-<script src="../js/libs/sh/shBrushCss.js"></script>
-<script src="../js/libs/sh/shBrushJScript.js"></script>
-<script src="../js/libs/sh/shBrushXml.js"></script>
-
+<svg id="test1"></svg>
 
 <script src="../lib/d3.v2.js"></script>
+<script src="../lib/jquery.min.js"></script>
 <script src="../nv.d3.js"></script>
+<script src="../src/models/legend.js"></script>
 <script src="../src/models/line.js"></script>
 <script>
 
@@ -62,8 +24,8 @@ body {
 //Format A
 nv.addGraph({
   generate: function() {
-    var width = $('#lineChart').width(),
-        height = $('#lineChart').height();
+    var width = $(window).width() - 40,
+        height = $(window).height() - 40;
 
     var chart = nv.models.line()
                 .width(width)
@@ -71,7 +33,7 @@ nv.addGraph({
                 .margin({top: 20, right: 20, bottom: 20, left: 20})
 
 
-    d3.select('#lineChart svg')
+    d3.select('#test1')
       .attr('width', width)
       .attr('height', height)
       .datum(sinAndCos())
@@ -81,9 +43,10 @@ nv.addGraph({
   },
   callback: function(graph) {
     $(window).resize(function() {
-      var width = $('#lineChart').width(),
-          height = $('#lineChart').height(),
-          margin = graph.margin();
+      var width = $(window).width() - 40,
+          height = $(window).height() - 40,
+          margin = graph.margin(),
+          animate = graph.animate();
 
 
       if (width < margin.left + margin.right + 20)
@@ -97,7 +60,7 @@ nv.addGraph({
          .width(width)
          .height(height);
 
-      d3.select('#lineChart svg')
+      d3.select('#test1')
         .attr('width', width)
         .attr('height', height)
         .call(graph);
@@ -130,17 +93,5 @@ function sinAndCos() {
   ];
 }
 
-
-
-
-$.ajax({
-  url: '../src/models/line.js',
-  type: 'GET',
-  dataType: 'text',
-  success: function(data) {
-    $('#line-js pre').text(data);
-    SyntaxHighlighter.highlight();
-  }
-});
 
 </script>
