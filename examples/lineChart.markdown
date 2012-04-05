@@ -8,7 +8,7 @@ title: Abstracted Simple Line Chart
 <div id="chart1" style="width:100%;height:500px">
 </div>
 
-<script type="text/javascript" src="simpleLine.js"> </script>
+<script type="text/javascript" src="lineChart.js"> </script>
 
 
 ### Source Code
