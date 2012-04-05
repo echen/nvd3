@@ -60,6 +60,7 @@ nv.models.line = function() {
 
 
       //TODO: currently doesnt remove if user renders, then turns off interactions... currently must turn off before the first render (will need to fix)
+      //TODO: have the interactive component update AFTER transitions are complete
       if (interactive) {
         shiftWrap.append('g').attr('class', 'point-clips');
         shiftWrap.append('g').attr('class', 'point-paths');
@@ -156,7 +157,8 @@ nv.models.line = function() {
           .style('stroke', function(d,i){ return color[i % 20] })
       d3.transition(lines)
           .style('stroke-opacity', 1)
-          .style('fill-opacity', .5);
+          .style('fill-opacity', .5)
+          .each('end', function(d,i) { log(d,i, data.length) });
 
 
       var paths = lines.selectAll('path')

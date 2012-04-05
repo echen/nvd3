@@ -20,6 +20,7 @@ nv.models.stackedArea = function() {
  *   'default' (input order)
  ************************************/
 
+  var lines = nv.models.line();
 
   function chart(selection) {
     selection.each(function(data) {
@@ -27,29 +28,43 @@ nv.models.stackedArea = function() {
         // Need to leave data alone to switch between stacked, stream, and expanded
         var dataCopy = JSON.parse(JSON.stringify(data));
 
-        //log(dataCopy);
-        dataCopy = dataCopy.map(function(series) { return series.values })
 
         //compute the data based on offset and order (calc's y0 for every point)
-        //dataCopy =  d3.layout.stack().offset(offset).order(order).values(function(d){ return d.values })(dataCopy);
-        dataCopy =  d3.layout.stack().offset(offset).order(order)(dataCopy);
+        dataCopy =  d3.layout.stack().offset(offset).order(order).values(function(d){ return d.values })(dataCopy);
 
-        var mx = dataCopy[0].length - 1, // assumes that all layers have same # of samples & that there is at least one layer
+        var mx = dataCopy[0].values.length - 1, // assumes that all layers have same # of samples & that there is at least one layer
             my = d3.max(dataCopy, function(d) {
-                return d3.max(d, function(d) {
+                return d3.max(d.values, function(d) {
                     return d.y0 + d.y;
                 });
             });
 
+
+        lines
+          .width(width - margin.left - margin.right)
+          .height(height - margin.top - margin.bottom)
+          .y(function(d) { return d.y + d.y0 })
+          .color(data.map(function(d,i) {
+            return d.color || color[i % 10];
+          }).filter(function(d,i) { return !data[i].disabled }));
+
         // Select the wrapper g, if it exists.
-        var wrap = d3.select(this).selectAll('g.d3stream').data([dataCopy]);
+        var wrap = d3.select(this).selectAll('g.d3stackedarea').data([dataCopy]);
 
         // Create the skeletal chart on first load.
-        var gEnter = wrap.enter().append('g').attr('class', 'd3stream').append('g');
+        var gEnter = wrap.enter().append('g').attr('class', 'd3stackedarea').append('g');
+
+        gEnter.append('g').attr('class', 'areaWrap');
+        gEnter.append('g').attr('class', 'linesWrap');
 
 
         var g = wrap.select('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        var linesWrap = g.select('.linesWrap')
+            .datum(dataCopy.filter(function(d) { return !d.disabled }))
+
+        d3.transition(linesWrap).call(lines);
 
 
         // Update the stacked graph
@@ -66,20 +81,17 @@ nv.models.stackedArea = function() {
             .y0(function(d) { return availableHeight - d.y0 * availableHeight / my; })
             .y1(function(d) { return availableHeight - d.y0 * availableHeight / my; })
 
-        var path = g.selectAll('path')
+        var path = g.select('.areaWrap').selectAll('path.area')
           .data(function(d) { return d });
-          //.data(dataCopy);
-        path.enter().append('path');
+        path.enter().append('path').attr('class', 'area');
         d3.transition(path.exit())
-            .attr('d', zeroArea)
+            .attr('d', function(d,i) { return zeroArea(d.values,i) })
             .remove();
         path
-            .style('fill-opacity', .75)
-            .style('stroke-opacity', .75)
             .style('fill', function(d,i){ return color[i % 10] })
             .style('stroke', function(d,i){ return color[i % 10] });
         d3.transition(path)
-            .attr('d', area);
+            .attr('d', function(d,i) { return area(d.values,i) })
 
     });
 
@@ -146,6 +158,7 @@ nv.models.stackedArea = function() {
     return chart;
   };
 
+  chart.dispatch = lines.dispatch;
 
   return chart;
 }
