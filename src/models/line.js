@@ -157,8 +157,7 @@ nv.models.line = function() {
           .style('stroke', function(d,i){ return color[i % 20] })
       d3.transition(lines)
           .style('stroke-opacity', 1)
-          .style('fill-opacity', .5)
-          .each('end', function(d,i) { log(d,i, data.length) });
+          .style('fill-opacity', .5);
 
 
       var paths = lines.selectAll('path')

@@ -667,6 +667,7 @@ nv.models.line = function() {
 
 
       //TODO: currently doesnt remove if user renders, then turns off interactions... currently must turn off before the first render (will need to fix)
+      //TODO: have the interactive component update AFTER transitions are complete
       if (interactive) {
         shiftWrap.append('g').attr('class', 'point-clips');
         shiftWrap.append('g').attr('class', 'point-paths');
@@ -1310,6 +1311,8 @@ nv.models.lineWithLegend = function() {
         selection.transition().call(chart);
       });
 
+/*
+      //
       legend.dispatch.on('legendMouseover', function(d, i) {
         d.hover = true;
         selection.transition().call(chart)
@@ -1319,6 +1322,7 @@ nv.models.lineWithLegend = function() {
         d.hover = false;
         selection.transition().call(chart)
       });
+*/
 
       lines.dispatch.on('pointMouseover.tooltip', function(e) {
         dispatch.tooltipShow({
