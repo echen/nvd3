@@ -12,6 +12,7 @@ nv.models.line = function() {
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
       interactive = true,
+      clipVoronoi = true,
       xDomain, yDomain;
 
   var x = d3.scale.linear(),
@@ -22,17 +23,19 @@ nv.models.line = function() {
 
   function chart(selection) {
     selection.each(function(data) {
-      var seriesData = data.map(function(d) { return d.values });
+      var seriesData = data.map(function(d) { return d.values }),
+          availableWidth = width - margin.left - margin.right,
+          availableHeight = height - margin.top - margin.bottom;
 
       x0 = x0 || x;
       y0 = y0 || y;
 
-      //TODO: consider reusing the parent's scales (almost always making duplicates of the same scale)
+
       x   .domain(xDomain || d3.extent(d3.merge(seriesData), getX ))
-          .range([0, width - margin.left - margin.right]);
+          .range([0, availableWidth]);
 
       y   .domain(yDomain || d3.extent(d3.merge(seriesData), getY ))
-          .range([height - margin.top - margin.bottom, 0]);
+          .range([availableHeight, 0]);
 
 
       var wrap = d3.select(this).selectAll('g.d3line').data([data]);
@@ -50,8 +53,8 @@ nv.models.line = function() {
           .attr('id', 'chart-clip-path-' + id)
         .append('rect');
       wrap.select('#chart-clip-path-' + id + ' rect')
-          .attr('width', width - margin.left - margin.right)
-          .attr('height', height - margin.top - margin.bottom);
+          .attr('width', availableWidth)
+          .attr('height', availableHeight);
 
       gEnter
           .attr('clip-path', 'url(#chart-clip-path-' + id + ')');
@@ -59,12 +62,17 @@ nv.models.line = function() {
       var shiftWrap = gEnter.append('g').attr('class', 'shiftWrap');
 
 
-      //TODO: currently doesnt remove if user renders, then turns off interactions... currently must turn off before the first render (will need to fix)
-      //TODO: have the interactive component update AFTER transitions are complete
-      if (interactive) {
+
+      // destroy interactive layer during transition,
+      //   VERY needed because of performance issues
+      g.selectAll('.point-clips *, .point-paths *').remove();
+
+
+      function interactiveLayer() {
+        if (!interactive) return false;
+
         shiftWrap.append('g').attr('class', 'point-clips');
         shiftWrap.append('g').attr('class', 'point-paths');
-
 
         var vertices = d3.merge(data.map(function(line, lineIndex) {
             return line.values.map(function(point, pointIndex) {
@@ -74,8 +82,7 @@ nv.models.line = function() {
           })
         );
 
-
-
+        // ***These clips are more than half the cause for the slowdown***
         //var pointClips = wrap.select('.point-clips').selectAll('clipPath') // **BROWSER BUG** can't reselect camel cased elements
         var pointClips = wrap.select('.point-clips').selectAll('.clip-path')
             .data(vertices);
@@ -89,23 +96,19 @@ nv.models.line = function() {
 
 
         //inject series and point index for reference into voronoi
+        // considering adding a removeZeros option, may be useful for the stacked chart and maybe others
         var voronoi = d3.geom.voronoi(vertices).map(function(d, i) { return { 'data': d, 'series': vertices[i][2], 'point': vertices[i][3] } });
 
 
         //TODO: Add small amount noise to prevent duplicates
         var pointPaths = wrap.select('.point-paths').selectAll('path')
             .data(voronoi);
-
         pointPaths.enter().append('path')
             .attr('class', function(d,i) { return 'path-'+i; })
-            //.style('fill', d3.rgb(230, 230, 230))
-            //.style('stroke', d3.rgb(200, 200, 200))
             .style('fill-opacity', 0);
-
         pointPaths.exit().remove();
-
         pointPaths
-            .attr('clip-path', function(d,i) { return 'url(#clip-' + id + '-' + d.series + '-' + d.point +')' })
+            .attr('clip-path', function(d,i) { return clipVoronoi ? 'url(#clip-' + id + '-' + d.series + '-' + d.point +')' : '' })
             .attr('d', function(d) { return 'M' + d.data.join(',') + 'Z'; })
             .on('mouseover', function(d) {
               var series = data[d.series],
@@ -153,12 +156,15 @@ nv.models.line = function() {
       lines
           .attr('class', function(d,i) { return 'line series-' + i })
           .classed('hover', function(d) { return d.hover })
-          .style('fill', function(d,i){ return color[i % 20] })
-          .style('stroke', function(d,i){ return color[i % 20] })
+          .style('fill', function(d,i){ return color[i % 10] })
+          .style('stroke', function(d,i){ return color[i % 10] })
       d3.transition(lines)
           .style('stroke-opacity', 1)
-          .style('fill-opacity', .5);
+          .style('fill-opacity', .5)
+          //.each('end', function(d,i) { if (!i) setTimeout(interactiveLayer, 0) }); //trying to call this after transitions are over, doesn't work on resize!
+          //.each('end', function(d,i) { if (!i) interactiveLayer()  }); //trying to call this after transitions are over, not sure if the timeout gains anything
 
+      setTimeout(interactiveLayer, 1000); //seems not to work as well as above... BUT fixes broken resize
 
       var paths = lines.selectAll('path')
           .data(function(d, i) { return [d.values] });
@@ -257,6 +263,12 @@ nv.models.line = function() {
   chart.interactive = function(_) {
     if (!arguments.length) return interactive;
     interactive = _;
+    return chart;
+  };
+
+  chart.clipVoronoi= function(_) {
+    if (!arguments.length) return clipVoronoi;
+    clipVoronoi = _;
     return chart;
   };
 

@@ -27,6 +27,7 @@ text {
 <script src="../src/models/xaxis.js"></script>
 <script src="../src/models/yaxis.js"></script>
 <script src="../src/models/legend.js"></script>
+<script src="../src/models/line.js"></script>
 <script src="../src/models/stackedArea.js"></script>
 <script src="../src/models/stackedAreaWithLegend.js"></script>
 <script>
@@ -35,8 +36,8 @@ text {
 //Format A
 nv.addGraph({
   generate: function() {
-    var n = 6, // number of layers
-        m = 200; // number of samples per layer
+    var n = 4, // number of layers
+        m = 120; // number of samples per layer... 10 years of monthly
         //color = d3.interpolateRgb("#aad", "#556");
 
     //format data to our liking, add keys
