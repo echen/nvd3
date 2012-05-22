@@ -1,6 +1,6 @@
 
 nv.models.lineWithLegend = function() {
-  var margin = {top: 30, right: 20, bottom: 50, left: 60},
+  var margin = {top: 60, right: 60, bottom: 40, left: 60},
       getWidth = function() { return 960 },
       getHeight = function() { return 500 },
       dotRadius = function() { return 2.5 },
@@ -13,6 +13,8 @@ nv.models.lineWithLegend = function() {
       y = d3.scale.linear(),
       xAxis = nv.models.axis().scale(x).orient('bottom'),
       yAxis = nv.models.axis().scale(y).orient('left'),
+      x2Axis = nv.models.axis().scale(x).orient('top'),
+      y2Axis = nv.models.axis().scale(y).orient('right'),
       legend = nv.models.legend().height(30),
       lines = nv.models.line();
 
@@ -50,6 +52,8 @@ nv.models.lineWithLegend = function() {
 
       gEnter.append('g').attr('class', 'x axis');
       gEnter.append('g').attr('class', 'y axis');
+      gEnter.append('g').attr('class', 'x2 axis');
+      gEnter.append('g').attr('class', 'y2 axis');
       gEnter.append('g').attr('class', 'linesWrap');
       gEnter.append('g').attr('class', 'legendWrap');
 
@@ -97,7 +101,7 @@ nv.models.lineWithLegend = function() {
 
 
       //TODO: margins should be adjusted based on what components are used: axes, axis labels, legend
-      margin.top = legend.height();
+      margin.top = legend.height() + 20; // 20 is for the x2 axis...  this should be done in a better place, but just doing this to show the 4 axes in an example
 
       var g = wrap.select('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -138,6 +142,25 @@ nv.models.lineWithLegend = function() {
       d3.transition(g.select('.y.axis'))
           .call(yAxis);
 
+      x2Axis
+        .domain(x.domain())
+        .range(x.range())
+        .ticks( width / 100 )
+        .tickSize(-availableHeight, 0);
+
+      d3.transition(g.select('.x2.axis'))
+          .call(x2Axis);
+
+      y2Axis
+        .domain(y.domain())
+        .range(y.range())
+        .ticks( height / 36 )
+        .tickSize(-availableWidth, 0);
+
+      g.select('.y2.axis')
+          .attr('transform', 'translate('+ x.range()[1] + ',0)');
+      d3.transition(g.select('.y2.axis'))
+          .call(y2Axis);
     });
 
     return chart;

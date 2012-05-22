@@ -1,9 +1,10 @@
 
-// This is an attempt to make an extremely easy to use chart that is ready to go,
-//    basically the chart models with the extra glue... Queuing, tooltips, automatic resize, etc.
-// I may make these more specific, like 'time series line with month end data points', etc.
-//    or may make yet another layer of abstraction... common settings.
-nv.charts.line = function() {
+// This technique works AS IS for month end data points
+//   In fact, this works for any series where each value is evenly spaced,
+//   and every series starts at the same value and is 1 to 1
+//     In other words, values at the same index, need to have the same x value
+//     for all series
+nv.charts.cumulativeLineChartDaily = function() {
   var selector = null,
       data = [],
       duration = 500,
@@ -13,14 +14,16 @@ nv.charts.line = function() {
       };
 
 
-  var graph = nv.models.lineWithLegend(),
+  var graph = nv.models.cumulativeLine()
+                .x(function(d,i) { return i }),
       showTooltip = function(e) {
         var offsetElement = document.getElementById(selector.substr(1)),
             left = e.pos[0] + offsetElement.offsetLeft,
             top = e.pos[1] + offsetElement.offsetTop,
             formatX = graph.xAxis.tickFormat(),
             formatY = graph.yAxis.tickFormat(),
-            x = formatX(graph.x()(e.point)),
+            x = formatX(graph.x()(e, e.pointIndex)),
+            //x = formatX(graph.x()(e.point)),
             y = formatY(graph.y()(e.point)),
             content = tooltip(e.series.key, x, y, e, graph);
 
@@ -28,8 +31,14 @@ nv.charts.line = function() {
       };
 
   //setting component defaults
-  graph.xAxis.tickFormat(d3.format(',r'));
-  graph.yAxis.tickFormat(d3.format(',.2f'));
+  //graph.xAxis.tickFormat(d3.format(',r'));
+  graph.xAxis.tickFormat(function(d) {
+    //return d3.time.format('%x')(new Date(d))
+    return d3.time.format('%x')(new Date(data[0].values[d].x))
+  });
+
+  //graph.yAxis.tickFormat(d3.format(',.2f'));
+  graph.yAxis.tickFormat(d3.format(',.2%'));
 
 
   //TODO: consider a method more similar to how the models are built

@@ -17,8 +17,8 @@ can point out a bug or two.
 
 ## Charts
 
-- [Simple Line](examples/simpleLine.html)
-- [Abstracted Simple Line (easier to use than above)](examples/lineChart.html)
+- [Simple Line](ghpages/simpleLine.html)
+- [Abstracted Simple Line (easier to use than above)](ghpages/lineChart.html)
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)

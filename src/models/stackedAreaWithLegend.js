@@ -1,8 +1,8 @@
 
 nv.models.stackedAreaWithLegend = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
-      width = 960,
-      height = 500,
+      getWidth = function() { return 960 },
+      getHeight = function() { return 500 },
       dotRadius = function() { return 2.5 },
       color = d3.scale.category10().range(),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
@@ -11,12 +11,13 @@ nv.models.stackedAreaWithLegend = function() {
       y = d3.scale.linear(),
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
-      xAxis = nv.models.xaxis().scale(x),
-      yAxis = nv.models.yaxis().scale(y),
+      xAxis = nv.models.axis().scale(x).orient('bottom'),
+      yAxis = nv.models.axis().scale(y).orient('left'),
       legend = nv.models.legend().height(30),
       controls = nv.models.legend().height(30),
       stacked = nv.models.stackedArea();
 
+  //TODO: let user select default
   var controlsData = [
     { key: 'Stacked' },
     { key: 'Stream', disabled: true },
@@ -24,9 +25,13 @@ nv.models.stackedAreaWithLegend = function() {
   ];
 
 
-
   function chart(selection) {
     selection.each(function(data) {
+      var width = getWidth(),
+          height = getHeight(),
+          availableWidth = width - margin.left - margin.right,
+          availableHeight = height - margin.top - margin.bottom;
+
       var series = data.filter(function(d) { return !d.disabled })
             //.map(function(d) { return d.values });
             .reduce(function(prev, curr, index) {  //sum up all the y's
@@ -38,18 +43,18 @@ nv.models.stackedAreaWithLegend = function() {
               }, []);
 
 
-      x   .domain(d3.extent(d3.merge(series), getX ))
-          .range([0, width - margin.left - margin.right]);
+      x   .domain(d3.extent(d3.merge(series), function(d) { return d.x } ))
+          .range([0, availableWidth]);
 
       y   .domain(stacked.offset() == 'zero' ?
-            [0, d3.max(d3.merge(series), getY )] :
+            [0, d3.max(series, function(d) { return d.y } )] :
             [0, 1]  // 0 - 100%
           )
-          .range([height - margin.top - margin.bottom, 0]);
+          .range([availableHeight, 0]);
 
       stacked
-        .width(width - margin.left - margin.right)
-        .height(height - margin.top - margin.bottom)
+        .width(availableWidth)
+        .height(availableHeight)
 
 
       var wrap = d3.select(this).selectAll('g.wrap').data([data]);
@@ -66,15 +71,14 @@ nv.models.stackedAreaWithLegend = function() {
         d.disabled = !d.disabled;
 
         if (d.disabled)
-          d.values.map(function(p) { p._y = p.y; p.y = 0; return p });
+          d.values.map(function(p) { p._y = p.y; p.y = 0; return p }); //TODO: need to use value from getY, not always d.y
         else
-          d.values.map(function(p) { p.y = p._y; return p });
+          d.values.map(function(p) { p.y = p._y; return p }); // ....
 
         if (!data.filter(function(d) { return !d.disabled }).length) {
           data.map(function(d) {
             d.disabled = false;
-            d.values.map(function(p) { p.y = p._y; return p });
-            //wrap.selectAll('.series').classed('disabled', false);
+            d.values.map(function(p) { p.y = p._y; return p }); // ....
             return d;
           });
         }
@@ -107,7 +111,7 @@ nv.models.stackedAreaWithLegend = function() {
       });
 
 
-/*
+      /*
       legend.dispatch.on('legendMouseover', function(d, i) {
         d.hover = true;
         selection.transition().call(chart)
@@ -117,19 +121,26 @@ nv.models.stackedAreaWithLegend = function() {
         d.hover = false;
         selection.transition().call(chart)
       });
-     */
+      */
 
-      stacked.dispatch.on('pointMouseover.tooltip', function(e) {
+      stacked.dispatch.on('tooltipShow', function(e) {
+        //disable tooltips when value ~= 0
+        //// TODO: consider removing points from voronoi that have 0 value instead of this hack
+        if (!Math.round(getY(e.point) * 100)) {  // 100 will not be good for very small numbers... will have to think about making this valu dynamic, based on data range
+          setTimeout(function() { d3.selectAll('.point.hover').classed('hover', false) }, 0);
+          return false;
+        }
+
         dispatch.tooltipShow({
           point: e.point,
           series: e.series,
-          pos: [e.pos[0] + margin.left, e.pos[1] + margin.top],
+          pos: [e.pos[0] + margin.left,  e.pos[1] + margin.top],
           seriesIndex: e.seriesIndex,
           pointIndex: e.pointIndex
         });
       });
 
-      stacked.dispatch.on('pointMouseout.tooltip', function(e) {
+      stacked.dispatch.on('tooltipHide', function(e) {
         dispatch.tooltipHide(e);
       });
 
@@ -143,28 +154,20 @@ nv.models.stackedAreaWithLegend = function() {
 
 
       legend.width(width/2 - margin.right);
-      controls
-          .width(280)
-          .color(['#666', '#666', '#666']);
-
       g.select('.legendWrap')
           .datum(data)
           .attr('transform', 'translate(' + (width/2 - margin.left) + ',' + (-margin.top) +')')
           .call(legend);
 
-
+      controls.width(280).color(['#444', '#444', '#444']);
       g.select('.controlsWrap')
           .datum(controlsData)
           .attr('transform', 'translate(0,' + (-margin.top) +')')
           .call(controls);
 
 
-
       var stackedWrap = g.select('.stackedWrap')
           .datum(data);
-          //.datum(data.filter(function(d) { return !d.disabled }))
-
-
       d3.transition(stackedWrap).call(stacked);
 
 
@@ -172,23 +175,22 @@ nv.models.stackedAreaWithLegend = function() {
         .domain(x.domain())
         .range(x.range())
         .ticks( width / 100 )
-        .tickSize(-(height - margin.top - margin.bottom), 0);
+        .tickSize(-availableHeight, 0);
 
       g.select('.x.axis')
-          .attr('transform', 'translate(0,' + y.range()[0] + ')');
+          .attr('transform', 'translate(0,' + availableHeight + ')');
       d3.transition(g.select('.x.axis'))
           .call(xAxis);
 
       yAxis
         .domain(y.domain())
         .range(y.range())
-        .ticks( stacked.offset() == 'wiggle' ? 0 : height / 36 )
-        .tickSize(-(width - margin.right - margin.left), 0)
+        .ticks(stacked.offset() == 'wiggle' ? 0 : height / 36)
+        .tickSize(-availableWidth, 0)
         .tickFormat(stacked.offset() == 'zero' ? d3.format(',.2f') : d3.format('%')); //TODO: stacked format should be set by caller
 
       d3.transition(g.select('.y.axis'))
           .call(yAxis);
-
     });
 
     return chart;
@@ -198,15 +200,15 @@ nv.models.stackedAreaWithLegend = function() {
 
   chart.x = function(_) {
     if (!arguments.length) return getX;
-    getX = _;
-    stacked.x(_);
+    getX = d3.functor(_);
+    stacked.x(getX);
     return chart;
   };
 
   chart.y = function(_) {
     if (!arguments.length) return getY;
-    getY = _;
-    stacked.y(_);
+    getY = d3.functor(_);
+    stacked.y(getY);
     return chart;
   };
 
@@ -217,14 +219,14 @@ nv.models.stackedAreaWithLegend = function() {
   };
 
   chart.width = function(_) {
-    if (!arguments.length) return width;
-    width = _;
+    if (!arguments.length) return getWidth;
+    getWidth = d3.functor(_);
     return chart;
   };
 
   chart.height = function(_) {
-    if (!arguments.length) return height;
-    height = _;
+    if (!arguments.length) return getHeight;
+    getHeight = d3.functor(_);
     return chart;
   };
 
@@ -236,17 +238,8 @@ nv.models.stackedAreaWithLegend = function() {
   };
 
   chart.stacked = stacked;
-
-  // Expose the x-axis' tickFormat method.
-  //chart.xAxis = {};
-  //d3.rebind(chart.xAxis, xAxis, 'tickFormat');
   chart.xAxis = xAxis;
-
-  // Expose the y-axis' tickFormat method.
-  //chart.yAxis = {};
-  //d3.rebind(chart.yAxis, yAxis, 'tickFormat');
   chart.yAxis = yAxis;
-
 
   return chart;
 }

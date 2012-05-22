@@ -16,12 +16,12 @@ nv.models.lineWithFocus = function() {
       y = d3.scale.linear(),
       x2 = d3.scale.linear(),
       y2 = d3.scale.linear(),
-      xAxis = nv.models.xaxis().scale(x),
-      yAxis = nv.models.yaxis().scale(y),
-      xAxis2 = nv.models.xaxis().scale(x2),
-      yAxis2 = nv.models.yaxis().scale(y2),
+      xAxis = nv.models.axis().scale(x).orient('bottom'),
+      yAxis = nv.models.axis().scale(y).orient('left'),
+      xAxis2 = nv.models.axis().scale(x2).orient('bottom'),
+      yAxis2 = nv.models.axis().scale(y2).orient('left'),
       legend = nv.models.legend().height(30),
-      focus = nv.models.line(),
+      focus = nv.models.line().clipEdge(true),
       context = nv.models.line().dotRadius(.1).interactive(false),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide'),
       brush = d3.svg.brush()
@@ -202,6 +202,7 @@ nv.models.lineWithFocus = function() {
         selection.transition().call(chart);
       });
 
+/*
       legend.dispatch.on('legendMouseover', function(d, i) {
         d.hover = true;
         selection.transition().call(chart)
@@ -210,7 +211,7 @@ nv.models.lineWithFocus = function() {
         d.hover = false;
         selection.transition().call(chart)
       });
-
+*/
 
       focus.dispatch.on('pointMouseover.tooltip', function(e) {
         dispatch.tooltipShow({

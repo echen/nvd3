@@ -1,20 +1,24 @@
 JS_FILES = \
-	src/nvtooltip.js \
 	src/intro.js \
 	src/core.js \
+	src/tooltip.js \
+	src/utils.js \
 	src/models/legend.js \
-	src/models/xaxis.js \
-	src/models/yaxis.js \
+	src/models/axis.js \
 	src/models/bar.js \
+	src/models/pie.js \
 	src/models/line.js \
 	src/models/lineWithFocus.js \
 	src/models/lineWithLegend.js \
+	src/models/cumulativeLine.js \
 	src/models/scatter.js \
 	src/models/scatterWithLegend.js \
 	src/models/sparkline.js \
 	src/models/stackedArea.js \
 	src/models/stackedAreaWithLegend.js \
 	src/charts/lineChart.js \
+	src/charts/lineChartDaily.js \
+	src/charts/cumulativeLineChartDaily.js \
 	src/outro.js
 
 JS_COMPILER = \
