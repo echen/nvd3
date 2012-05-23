@@ -48,3 +48,7 @@ function stream_layers(n, m, o) {
     });
 }
 
+function stream_index(d, i) {
+  return {x: i, y: Math.max(0, d)};
+}
+
