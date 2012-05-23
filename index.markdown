@@ -18,7 +18,6 @@ can point out a bug or two.
 ## Charts
 
 - [Simple Line](ghpages/simpleLine.html)
-- [Abstracted Simple Line (easier to use than above)](ghpages/lineChart.html)
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)
@@ -26,6 +25,11 @@ can point out a bug or two.
 - [Stacked/Stream/Expanded Area](examples/stackedAreaWithLegend.html)
 - [Simple Bar](examples/bar.html)
 
+
+## 'Ready to Go' Charts (experimental)
+
+- [Simple Line](ghpages/lineChart.html)
+- [Stacked/Stream/Expanded Area](ghpages/stackedAreaChart.html)
 
 
 ## Resources
