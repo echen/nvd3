@@ -29,7 +29,6 @@ can point out a bug or two.
 ## 'Ready to Go' Charts (experimental)
 
 - [Simple Line](ghpages/lineChart.html)
-- [Stacked/Stream/Expanded Area](ghpages/stackedAreaChart.html)
 
 
 ## Resources
