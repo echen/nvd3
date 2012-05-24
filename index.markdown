@@ -24,6 +24,7 @@ can point out a bug or two.
 - [Scatterplot](examples/scatterWithLegend.html)
 - [Stacked/Stream/Expanded Area](examples/stackedAreaWithLegend.html)
 - [Simple Bar](examples/bar.html)
+- [Line and Bar Combo with two Y Axes](examples/linePlusBar.html)
 
 
 ## 'Ready to Go' Charts (experimental)
