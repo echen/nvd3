@@ -5,21 +5,22 @@ nv.models.scatter = function() {
       height = 500,
       color = d3.scale.category10().range(),
       id = Math.floor(Math.random() * 100000), //Create semi-unique ID incase user doesn't selet one
-      getX = function(d) { return d.x }, // or d[0]
-      getY = function(d) { return d.y }, // or d[1]
-      getSize = function(d) { return d.size }, // or d[2]
-      forceX = [],
-      forceY = [],
-      forceSize = [],
-      interactive = true,
-      clipEdge = false,
-      clipVoronoi = true,
-      xDomain, yDomain, sizeDomain;
+      getX = function(d) { return d.x }, // accessor to get the x value from a data point
+      getY = function(d) { return d.y }, // accessor to get the y value from a data point
+      getSize = function(d) { return d.size }, // accessor to get the point radius from a data point
+      forceX = [], // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
+      forceY = [], // List of numbers to Force into the Y scale 
+      forceSize = [], // List of numbers to Force into the Size scale 
+      interactive = true, // If true, plots a voronoi overlay for advanced point interection
+      clipEdge = false, // if true, masks lines within x and y scale
+      clipVoronoi = true, // if true, masks each point with a circle... can turn off to slightly increase performance
+      clipRadius = function() { return 25 },
+      xDomain, yDomain, sizeDomain; // Used to manually set the x and y domain, good to save time if calculation has already been made
 
   var x = d3.scale.linear(),
       y = d3.scale.linear(),
       z = d3.scale.sqrt(), //sqrt because point size is done by area, not radius
-      dispatch = d3.dispatch('pointMouseover', 'pointMouseout'),
+      dispatch = d3.dispatch('pointClick', 'pointMouseover', 'pointMouseout'),//TODO: consider renaming to elementMouseove and elementMouseout for consistency
       x0, y0, z0,
       timeoutID;
 
@@ -69,20 +70,22 @@ nv.models.scatter = function() {
       var gEnter = wrapEnter.append('g');
 
       gEnter.append('g').attr('class', 'groups');
-      gEnter.append('g').attr('class', 'distribution');
 
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      defsEnter.append('clipPath')
-          .attr('id', 'edge-clip-' + id)
-        .append('rect');
-      wrap.select('#edge-clip-' + id + ' rect')
-          .attr('width', availableWidth)
-          .attr('height', availableHeight);
+      if (clipEdge) {
+        defsEnter.append('clipPath')
+            .attr('id', 'edge-clip-' + id)
+          .append('rect');
+        wrap.select('#edge-clip-' + id + ' rect')
+            .attr('width', availableWidth)
+            .attr('height', availableHeight);
 
-      gEnter
-          .attr('clip-path', clipEdge ? 'url(#edge-clip-' + id + ')' : null);
+        gEnter
+            .attr('clip-path', 'url(#edge-clip-' + id + ')');
+      }
+
 
 
       function updateInteractiveLayer() {
@@ -93,7 +96,6 @@ nv.models.scatter = function() {
           return false;
         }
 
-        defsEnter.append('clipPath').attr('id', 'points-clip-' + id);
         gEnter.append('g').attr('class', 'point-paths');
 
         var vertices = d3.merge(data.map(function(group, groupIndex) {
@@ -107,18 +109,21 @@ nv.models.scatter = function() {
         );
 
 
+        if (clipVoronoi) {
+          defsEnter.append('clipPath').attr('id', 'points-clip-' + id);
 
-        var pointClips = wrap.select('#points-clip-' + id).selectAll('circle')
-            .data(vertices);
-        pointClips.enter().append('circle')
-            .attr('r', 25);
-        pointClips.exit().remove();
-        pointClips
-            .attr('cx', function(d) { return d[0] })
-            .attr('cy', function(d) { return d[1] });
+          var pointClips = wrap.select('#points-clip-' + id).selectAll('circle')
+              .data(vertices);
+          pointClips.enter().append('circle')
+              .attr('r', clipRadius);
+          pointClips.exit().remove();
+          pointClips
+              .attr('cx', function(d) { return d[0] })
+              .attr('cy', function(d) { return d[1] });
 
-        wrap.select('.point-paths')
-            .attr('clip-path', 'url(#points-clip-' + id + ')');
+          wrap.select('.point-paths')
+              .attr('clip-path', 'url(#points-clip-' + id + ')');
+        }
 
 
         //inject series and point index for reference into voronoi
@@ -133,6 +138,18 @@ nv.models.scatter = function() {
         pointPaths.exit().remove();
         pointPaths
             .attr('d', function(d) { return 'M' + d.data.join(',') + 'Z'; })
+            .on('click', function(d) {
+              var series = data[d.series],
+                  point  = series.values[d.point];
+
+              dispatch.pointClick({
+                point: point,
+                series:series,
+                pos: [x(getX(point, d.point)) + margin.left, y(getY(point, d.point)) + margin.top],
+                seriesIndex: d.series,
+                pointIndex: d.point
+              });
+            })
             .on('mouseover', function(d) {
               var series = data[d.series],
                   point  = series.values[d.point];
@@ -157,19 +174,11 @@ nv.models.scatter = function() {
         dispatch.on('pointMouseover.point', function(d) {
             wrap.select('.series-' + d.seriesIndex + ' .point-' + d.pointIndex)
                 .classed('hover', true);
-            wrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
-                .attr('y1', d.pos[1] - margin.top);
-            wrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
-                .attr('x1', d.pos[0] - margin.left);
         });
 
         dispatch.on('pointMouseout.point', function(d) {
             wrap.select('.series-' + d.seriesIndex + ' circle.point-' + d.pointIndex)
                 .classed('hover', false);
-            wrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
-                .attr('y1', y.range()[0]);
-            wrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
-                .attr('x1', x.range()[0]);
         });
 
       }
@@ -215,44 +224,6 @@ nv.models.scatter = function() {
           .attr('r', function(d,i) { return z(getSize(d,i)) });
 
 
-      // TODO: make axis distributions options... maybe even abstract out of this file
-
-      var distX = groups.selectAll('line.distX')
-          .data(function(d) { return d.values })
-      distX.enter().append('line')
-          .attr('x1', function(d,i) { return x0(getX(d,i)) })
-          .attr('x2', function(d,i) { return x0(getX(d,i)) })
-      //d3.transition(distX.exit())
-      d3.transition(groups.exit().selectAll('line.distX'))
-          .attr('x1', function(d,i) { return x(getX(d,i)) })
-          .attr('x2', function(d,i) { return x(getX(d,i)) })
-          .remove();
-      distX
-          .attr('class', function(d,i) { return 'distX distX-' + i })
-          .attr('y1', y.range()[0])
-          .attr('y2', y.range()[0] + 8);
-      d3.transition(distX)
-          .attr('x1', function(d,i) { return x(getX(d,i)) })
-          .attr('x2', function(d,i) { return x(getX(d,i)) })
-
-      var distY = groups.selectAll('line.distY')
-          .data(function(d) { return d.values })
-      distY.enter().append('line')
-          .attr('y1', function(d,i) { return y0(getY(d,i)) })
-          .attr('y2', function(d,i) { return y0(getY(d,i)) });
-      //d3.transition(distY.exit())
-      d3.transition(groups.exit().selectAll('line.distY'))
-          .attr('y1', function(d,i) { return y(getY(d,i)) })
-          .attr('y2', function(d,i) { return y(getY(d,i)) })
-          .remove();
-      distY
-          .attr('class', function(d,i) { return 'distY distY-' + i })
-          .attr('x1', x.range()[0])
-          .attr('x2', x.range()[0] - 8)
-      d3.transition(distY)
-          .attr('y1', function(d,i) { return y(getY(d,i)) })
-          .attr('y2', function(d,i) { return y(getY(d,i)) });
-
 
       clearTimeout(timeoutID);
       timeoutID = setTimeout(updateInteractiveLayer, 750);
@@ -270,24 +241,6 @@ nv.models.scatter = function() {
 
   chart.dispatch = dispatch;
 
-  chart.margin = function(_) {
-    if (!arguments.length) return margin;
-    margin = _;
-    return chart;
-  };
-
-  chart.width = function(_) {
-    if (!arguments.length) return width;
-    width = _;
-    return chart;
-  };
-
-  chart.height = function(_) {
-    if (!arguments.length) return height;
-    height = _;
-    return chart;
-  };
-
   chart.x = function(_) {
     if (!arguments.length) return getX;
     getX = d3.functor(_);
@@ -303,6 +256,24 @@ nv.models.scatter = function() {
   chart.size = function(_) {
     if (!arguments.length) return getSize;
     getSize = d3.functor(_);
+    return chart;
+  };
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
+    return chart;
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
     return chart;
   };
 

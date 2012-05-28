@@ -1303,42 +1303,43 @@ nv.models.legend = function() {
 
   return chart;
 }
-//TODO: consider adding axes
-//        -How to deal with time vs generic linear, vs any other scale?
 
+// This is an attempt to use a scatter plot with the line plot do do point interaction
+//   If this performs good, will likely use as the line implementation, this way the
+//   point interaction using a voronoi will only be in the scatter not in the exact same code
+//   in both the scatter and the line
 nv.models.line = function() {
   //Default Settings
   var margin = {top: 0, right: 0, bottom: 0, left: 0}, 
       width = 960,
       height = 500,
-      dotRadius = function() { return 2.5 }, //consider removing this, or making similar to scatter
       color = d3.scale.category10().range(),
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID incase user doesn't select one
-      getX = function(d) { return d.x },
-      getY = function(d) { return d.y },
-      forceX = [],
-      forceY = [],
-      interactive = true,
-      clipEdge = false,
-      clipVoronoi = true,
-      xDomain, yDomain;
+      getX = function(d) { return d.x }, // accessor to get the x value from a data point
+      getY = function(d) { return d.y }, // accessor to get the y value from a data point
+      getSize = function() { return 2.5 }, // accessor to get the point radius from a data point
+      forceX = [], // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
+      forceY = [], // List of nuumbers to Force into the Y scale 
+      interactive = true, // If true, plots a voronoi overlay for advanced point interection
+      clipEdge = false, // if true, masks lines within x and y scale
+      clipVoronoi = true, // if true, masks each point with a circle... can turn off to slightly increase performance
+      xDomain, yDomain; // Used to manually set the x and y domain, good to save time if calculation has already been made
 
   var x = d3.scale.linear(),
       y = d3.scale.linear(),
-      dispatch = d3.dispatch('pointMouseover', 'pointMouseout'),
+      scatter = nv.models.scatter().size(getSize).id(id),
       x0, y0,
       timeoutID;
 
 
-
-
   function chart(selection) {
     selection.each(function(data) {
-      var seriesData = data.map(function(d) { 
-            return d.values.map(function(d,i) {
-              return { x: getX(d,i), y: getY(d,i) }
-            })
-          }),
+      var seriesData = (xDomain && yDomain) ? [] : // if we know xDomain and yDomain, no need to calculate
+            data.map(function(d) { 
+              return d.values.map(function(d,i) {
+                return { x: getX(d,i), y: getY(d,i) }
+              })
+            }),
           availableWidth = width - margin.left - margin.right,
           availableHeight = height - margin.top - margin.bottom;
 
@@ -1353,140 +1354,58 @@ nv.models.line = function() {
       y   .domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.y }).concat(forceY)))
           .range([availableHeight, 0]);
 
-
       var wrap = d3.select(this).selectAll('g.d3line').data([data]);
       var wrapEnter = wrap.enter().append('g').attr('class', 'd3line');
       var defsEnter = wrapEnter.append('defs');
       var gEnter = wrapEnter.append('g');
 
-      gEnter.append('g').attr('class', 'lines');
+      gEnter.append('g').attr('class', 'groups');
 
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      defsEnter.append('clipPath')
-          .attr('id', 'edge-clip-' + id)
-        .append('rect');
-      wrap.select('#edge-clip-' + id + ' rect')
-          .attr('width', availableWidth)
-          .attr('height', availableHeight);
+      if (clipEdge) {
+        defsEnter.append('clipPath')
+            .attr('id', 'edge-clip-' + id)
+          .append('rect');
+        wrap.select('#edge-clip-' + id + ' rect')
+            .attr('width', availableWidth)
+            .attr('height', availableHeight);
 
-      gEnter
-          .attr('clip-path', clipEdge ? 'url(#edge-clip-' + id + ')' : null);
-
-
-
-      function updateInteractiveLayer() {
-
-        if (!interactive) {
-          wrap.select('#points-clip-' + id).remove();
-          wrap.select('.point-paths').remove();
-          return false;
-        }
-
-        gEnter.append('g').attr('class', 'point-paths');
-        defsEnter.append('clipPath').attr('id', 'points-clip-' + id);
-
-
-        var vertices = d3.merge(data.map(function(line, lineIndex) {
-            return line.values.map(function(point, pointIndex) {
-              // Adding noise to make duplicates very unlikely
-              // Inject series and point index for reference
-              // TODO: see how much time this consumes
-              return [x(getX(point, pointIndex)) * (Math.random() / 1e12 + 1)  , y(getY(point, pointIndex)) * (Math.random() / 1e12 + 1), lineIndex, pointIndex]; 
-            })
-          })
-        );
-
-        var pointClips = wrap.select('#points-clip-' + id).selectAll('circle')
-            .data(vertices);
-        pointClips.enter().append('circle')
-            .attr('r', 25);
-        pointClips.exit().remove();
-        pointClips
-            .attr('cx', function(d) { return d[0] })
-            .attr('cy', function(d) { return d[1] });
-
-        wrap.select('.point-paths')
-            .attr('clip-path', clipVoronoi ? 'url(#points-clip-' + id + ')' : null);
-
-
-        //inject series and point index for reference into voronoi
-        // considering adding a removeZeros option, may be useful for the stacked chart and maybe others
-        var voronoi = d3.geom.voronoi(vertices).map(function(d,i) { return { 'data': d, 'series': vertices[i][2], 'point': vertices[i][3] } });
-
-
-        var pointPaths = wrap.select('.point-paths').selectAll('path')
-            .data(voronoi);
-        pointPaths.enter().append('path')
-            .attr('class', function(d,i) { return 'path-'+i; });
-        pointPaths.exit().remove();
-        pointPaths
-            .attr('d', function(d) { return 'M' + d.data.join(',') + 'Z'; })
-            .on('mouseover', function(d) {
-              var series = data[d.series],
-                  point  = series.values[d.point];
-
-              dispatch.pointMouseover({
-                point: point,
-                series:series,
-                pos: [x(getX(point, d.point)) + margin.left, y(getY(point, d.point)) + margin.top],
-                seriesIndex: d.series,
-                pointIndex: d.point
-              });
-            })
-            .on('mouseout', function(d, i) {
-              dispatch.pointMouseout({
-                point: data[d.series].values[d.point],
-                series: data[d.series],
-                seriesIndex: d.series,
-                pointIndex: d.point
-              });
-            });
-
-
-        dispatch.on('pointMouseover.point', function(d) {
-            wrap.select('.series-' + d.seriesIndex + ' .point-' + d.pointIndex)
-                .classed('hover', true);
-        });
-        dispatch.on('pointMouseout.point', function(d) {
-            wrap.select('.series-' + d.seriesIndex + ' .point-' + d.pointIndex)
-                .classed('hover', false);
-        });
-
+        gEnter
+            .attr('clip-path', 'url(#edge-clip-' + id + ')');
       }
 
 
 
 
-      var lines = wrap.select('.lines').selectAll('.line')
+      var groups = wrap.select('.groups').selectAll('.line')
           .data(function(d) { return d }, function(d) { return d.key });
-      lines.enter().append('g')
+      groups.enter().append('g')
           .style('stroke-opacity', 1e-6)
           .style('fill-opacity', 1e-6);
-      d3.transition(lines.exit())
+      d3.transition(groups.exit())
           .style('stroke-opacity', 1e-6)
           .style('fill-opacity', 1e-6)
           .remove();
-      lines
+     groups
           .attr('class', function(d,i) { return 'line series-' + i })
           .classed('hover', function(d) { return d.hover })
           .style('fill', function(d,i){ return color[i % 10] })
           .style('stroke', function(d,i){ return color[i % 10] })
-      d3.transition(lines)
+      d3.transition(groups)
           .style('stroke-opacity', 1)
           .style('fill-opacity', .5)
 
-      //setTimeout(interactiveLayer, 1000); //seems not to work as well as above... BUT fixes broken resize
 
-      var paths = lines.selectAll('path')
+      var paths = groups.selectAll('path')
           .data(function(d, i) { return [d.values] });
       paths.enter().append('path')
           .attr('d', d3.svg.line()
             .x(function(d,i) { return x0(getX(d,i)) })
             .y(function(d,i) { return y0(getY(d,i)) })
           );
-      d3.transition(lines.exit().selectAll('path'))
+      d3.transition(groups.exit().selectAll('path'))
           .attr('d', d3.svg.line()
             .x(function(d,i) { return x(getX(d,i)) })
             .y(function(d,i) { return y(getY(d,i)) })
@@ -1498,20 +1417,13 @@ nv.models.line = function() {
             .y(function(d,i) { return y(getY(d,i)) })
           );
 
-
-      var points = lines.selectAll('circle.point')
+/*
+      var points = groups.selectAll('circle.point')
           .data(function(d) { return d.values });
       points.enter().append('circle')
           .attr('cx', function(d,i) { return x0(getX(d,i)) })
           .attr('cy', function(d,i) { return y0(getY(d,i)) });
-          /*
-      // I think this is redundant with below, but originally put this here for a reason
-      d3.transition(points.exit())
-          .attr('cx', function(d,i) { return x(getX(d,i)) })
-          .attr('cy', function(d,i) { return y(getY(d,i)) })
-          .remove();
-         */
-      d3.transition(lines.exit().selectAll('circle.point'))
+      d3.transition(groups.exit().selectAll('circle.point'))
           .attr('cx', function(d,i) { return x(getX(d,i)) })
           .attr('cy', function(d,i) { return y(getY(d,i)) })
           .remove();
@@ -1519,11 +1431,23 @@ nv.models.line = function() {
           .attr('class', function(d,i) { return 'point point-' + i })
           .attr('cx', function(d,i) { return x(getX(d,i)) })
           .attr('cy', function(d,i) { return y(getY(d,i)) })
-          .attr('r', dotRadius);
+          .attr('r', getSize);
+
+*/
 
 
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(updateInteractiveLayer, 750);
+      scatter
+        .width(availableWidth)
+        .height(availableHeight)
+        .xDomain(x.domain())
+        .yDomain(y.domain())
+
+
+      wrapEnter.append('g').attr('class', 'scatterWrap');
+      var scatterWrap = wrap.select('.scatterWrap').datum(data);
+
+      d3.transition(scatterWrap).call(scatter);
+
 
       //store old scales for use in transitions on update, to animate from old to new positions
       x0 = x.copy();
@@ -1535,7 +1459,9 @@ nv.models.line = function() {
   }
 
 
-  chart.dispatch = dispatch;
+  chart.dispatch = scatter.dispatch;
+
+  d3.rebind(chart, scatter, 'size');
 
   chart.x = function(_) {
     if (!arguments.length) return getX;
@@ -1609,15 +1535,10 @@ nv.models.line = function() {
     return chart;
   };
 
-  chart.dotRadius = function(_) {
-    if (!arguments.length) return dotRadius;
-    dotRadius = d3.functor(_);
-    return chart;
-  };
-
   chart.color = function(_) {
     if (!arguments.length) return color;
     color = _;
+    scatter.color(_);
     return chart;
   };
 
@@ -2242,11 +2163,8 @@ nv.models.lineWithFocus = function() {
 
 nv.models.lineWithLegend = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
-      getWidth = function() { return 960 },
-      getHeight = function() { return 500 },
-      dotRadius = function() { return 2.5 },
-      getX = function(d) { return d.x },
-      getY = function(d) { return d.y },
+      width = function() { return 960 },
+      height = function() { return 500 },
       color = d3.scale.category10().range(),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
 
@@ -2260,27 +2178,27 @@ nv.models.lineWithLegend = function() {
 
   function chart(selection) {
     selection.each(function(data) {
-      var width = getWidth(),
-          height = getHeight(),
-          availableWidth = width - margin.left - margin.right,
-          availableHeight = height - margin.top - margin.bottom;
-
-      var series = data.filter(function(d) { return !d.disabled })
+      var seriesData = data.filter(function(d) { return !d.disabled })
             .map(function(d) { 
               return d.values.map(function(d,i) {
-                return { x: getX(d,i), y: getY(d,i) }
+                return { x: lines.x()(d,i), y: lines.y()(d,i) }
               })
-            });
+            }),
+          availableWidth = width() - margin.left - margin.right,
+          availableHeight = height() - margin.top - margin.bottom;
 
-      x   .domain(d3.extent(d3.merge(series), function(d) { return d.x } ))
+
+      x   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.x }).concat(lines.forceX) ))
           .range([0, availableWidth]);
 
-      y   .domain(d3.extent(d3.merge(series), function(d) { return d.y } ))
+      y   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.y }).concat(lines.forceY) ))
           .range([availableHeight, 0]);
 
       lines
         .width(availableWidth)
         .height(availableHeight)
+        .xDomain(x.domain())
+        .yDomain(y.domain())
         .color(data.map(function(d,i) {
           return d.color || color[i % 10];
         }).filter(function(d,i) { return !data[i].disabled }))
@@ -2344,11 +2262,11 @@ nv.models.lineWithLegend = function() {
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      legend.width(width/2 - margin.right);
+      legend.width(availableWidth / 2);
 
       g.select('.legendWrap')
           .datum(data)
-          .attr('transform', 'translate(' + (width/2 - margin.left) + ',' + (-margin.top) +')')
+          .attr('transform', 'translate(' + (availableWidth / 2) + ',' + (-margin.top) +')')
           .call(legend);
 
 
@@ -2362,7 +2280,7 @@ nv.models.lineWithLegend = function() {
       xAxis
         .domain(x.domain())
         .range(x.range())
-        .ticks( width / 100 )
+        .ticks( availableWidth / 100 )
         .tickSize(-availableHeight, 0);
 
       g.select('.x.axis')
@@ -2370,11 +2288,12 @@ nv.models.lineWithLegend = function() {
       d3.transition(g.select('.x.axis'))
           .call(xAxis);
 
+
       yAxis
         .domain(y.domain())
         .range(y.range())
-        .ticks( height / 36 )
-        .tickSize(-availableWidth, 0);
+        .ticks( availableHeight / 36 )
+        .tickSize( -availableWidth, 0);
 
       d3.transition(g.select('.y.axis'))
           .call(yAxis);
@@ -2384,27 +2303,14 @@ nv.models.lineWithLegend = function() {
     return chart;
   }
 
+
   chart.dispatch = dispatch;
   chart.legend = legend;
   chart.xAxis = xAxis;
   chart.yAxis = yAxis;
 
-  d3.rebind(chart, lines, 'interactive');
-  //consider rebinding x and y as well
+  d3.rebind(chart, lines, 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id');
 
-  chart.x = function(_) {
-    if (!arguments.length) return getX;
-    getX = _;
-    lines.x(_);
-    return chart;
-  };
-
-  chart.y = function(_) {
-    if (!arguments.length) return getY;
-    getY = _;
-    lines.y(_);
-    return chart;
-  };
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
@@ -2413,21 +2319,14 @@ nv.models.lineWithLegend = function() {
   };
 
   chart.width = function(_) {
-    if (!arguments.length) return getWidth;
-    getWidth = d3.functor(_);
+    if (!arguments.length) return width;
+    width = d3.functor(_);
     return chart;
   };
 
   chart.height = function(_) {
-    if (!arguments.length) return getHeight;
-    getHeight = d3.functor(_);
-    return chart;
-  };
-
-  chart.dotRadius = function(_) {
-    if (!arguments.length) return dotRadius;
-    dotRadius = d3.functor(_);
-    lines.dotRadius = _;
+    if (!arguments.length) return height;
+    height = d3.functor(_);
     return chart;
   };
 
@@ -2710,6 +2609,8 @@ nv.models.scatter = function() {
       forceX = [],
       forceY = [],
       forceSize = [],
+      showDistX = false,
+      showDistY = false,
       interactive = true,
       clipEdge = false,
       clipVoronoi = true,
@@ -2718,7 +2619,7 @@ nv.models.scatter = function() {
   var x = d3.scale.linear(),
       y = d3.scale.linear(),
       z = d3.scale.sqrt(), //sqrt because point size is done by area, not radius
-      dispatch = d3.dispatch('pointMouseover', 'pointMouseout'),
+      dispatch = d3.dispatch('pointMouseover', 'pointMouseout'),//TODO: consider renaming to elementMouseove and elementMouseout for consistency
       x0, y0, z0,
       timeoutID;
 
@@ -2773,15 +2674,18 @@ nv.models.scatter = function() {
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      defsEnter.append('clipPath')
-          .attr('id', 'edge-clip-' + id)
-        .append('rect');
-      wrap.select('#edge-clip-' + id + ' rect')
-          .attr('width', availableWidth)
-          .attr('height', availableHeight);
+      if (clipEdge) {
+        defsEnter.append('clipPath')
+            .attr('id', 'edge-clip-' + id)
+          .append('rect');
+        wrap.select('#edge-clip-' + id + ' rect')
+            .attr('width', availableWidth)
+            .attr('height', availableHeight);
 
-      gEnter
-          .attr('clip-path', clipEdge ? 'url(#edge-clip-' + id + ')' : null);
+        gEnter
+            .attr('clip-path', 'url(#edge-clip-' + id + ')');
+      }
+
 
 
       function updateInteractiveLayer() {
@@ -2792,7 +2696,6 @@ nv.models.scatter = function() {
           return false;
         }
 
-        defsEnter.append('clipPath').attr('id', 'points-clip-' + id);
         gEnter.append('g').attr('class', 'point-paths');
 
         var vertices = d3.merge(data.map(function(group, groupIndex) {
@@ -2806,18 +2709,21 @@ nv.models.scatter = function() {
         );
 
 
+        if (clipVoronoi) {
+          defsEnter.append('clipPath').attr('id', 'points-clip-' + id);
 
-        var pointClips = wrap.select('#points-clip-' + id).selectAll('circle')
-            .data(vertices);
-        pointClips.enter().append('circle')
-            .attr('r', 25);
-        pointClips.exit().remove();
-        pointClips
-            .attr('cx', function(d) { return d[0] })
-            .attr('cy', function(d) { return d[1] });
+          var pointClips = wrap.select('#points-clip-' + id).selectAll('circle')
+              .data(vertices);
+          pointClips.enter().append('circle')
+              .attr('r', 25);
+          pointClips.exit().remove();
+          pointClips
+              .attr('cx', function(d) { return d[0] })
+              .attr('cy', function(d) { return d[1] });
 
-        wrap.select('.point-paths')
-            .attr('clip-path', 'url(#points-clip-' + id + ')');
+          wrap.select('.point-paths')
+              .attr('clip-path', 'url(#points-clip-' + id + ')');
+        }
 
 
         //inject series and point index for reference into voronoi
@@ -2856,19 +2762,23 @@ nv.models.scatter = function() {
         dispatch.on('pointMouseover.point', function(d) {
             wrap.select('.series-' + d.seriesIndex + ' .point-' + d.pointIndex)
                 .classed('hover', true);
-            wrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
-                .attr('y1', d.pos[1] - margin.top);
-            wrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
-                .attr('x1', d.pos[0] - margin.left);
+            if (showDistX)
+              wrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
+                  .attr('y1', d.pos[1] - margin.top);
+            if (showDistY) 
+              wrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
+                  .attr('x1', d.pos[0] - margin.left);
         });
 
         dispatch.on('pointMouseout.point', function(d) {
             wrap.select('.series-' + d.seriesIndex + ' circle.point-' + d.pointIndex)
                 .classed('hover', false);
-            wrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
-                .attr('y1', y.range()[0]);
-            wrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
-                .attr('x1', x.range()[0]);
+            if (showDistX)
+              wrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
+                  .attr('y1', y.range()[0]);
+            if (showDistY) 
+              wrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
+                  .attr('x1', x.range()[0]);
         });
 
       }
@@ -2914,43 +2824,47 @@ nv.models.scatter = function() {
           .attr('r', function(d,i) { return z(getSize(d,i)) });
 
 
-      // TODO: make axis distributions options... maybe even abstract out of this file
+      // TODO: consider abstracting Axis distributions out of this file
 
-      var distX = groups.selectAll('line.distX')
-          .data(function(d) { return d.values })
-      distX.enter().append('line')
-          .attr('x1', function(d,i) { return x0(getX(d,i)) })
-          .attr('x2', function(d,i) { return x0(getX(d,i)) })
-      //d3.transition(distX.exit())
-      d3.transition(groups.exit().selectAll('line.distX'))
-          .attr('x1', function(d,i) { return x(getX(d,i)) })
-          .attr('x2', function(d,i) { return x(getX(d,i)) })
-          .remove();
-      distX
-          .attr('class', function(d,i) { return 'distX distX-' + i })
-          .attr('y1', y.range()[0])
-          .attr('y2', y.range()[0] + 8);
-      d3.transition(distX)
-          .attr('x1', function(d,i) { return x(getX(d,i)) })
-          .attr('x2', function(d,i) { return x(getX(d,i)) })
+      if (showDistX) {
+        var distX = groups.selectAll('line.distX')
+            .data(function(d) { return d.values })
+        distX.enter().append('line')
+            .attr('x1', function(d,i) { return x0(getX(d,i)) })
+            .attr('x2', function(d,i) { return x0(getX(d,i)) })
+        //d3.transition(distX.exit())
+        d3.transition(groups.exit().selectAll('line.distX'))
+            .attr('x1', function(d,i) { return x(getX(d,i)) })
+            .attr('x2', function(d,i) { return x(getX(d,i)) })
+            .remove();
+        distX
+            .attr('class', function(d,i) { return 'distX distX-' + i })
+            .attr('y1', y.range()[0])
+            .attr('y2', y.range()[0] + 8);
+        d3.transition(distX)
+            .attr('x1', function(d,i) { return x(getX(d,i)) })
+            .attr('x2', function(d,i) { return x(getX(d,i)) })
+      }
 
-      var distY = groups.selectAll('line.distY')
-          .data(function(d) { return d.values })
-      distY.enter().append('line')
-          .attr('y1', function(d,i) { return y0(getY(d,i)) })
-          .attr('y2', function(d,i) { return y0(getY(d,i)) });
-      //d3.transition(distY.exit())
-      d3.transition(groups.exit().selectAll('line.distY'))
-          .attr('y1', function(d,i) { return y(getY(d,i)) })
-          .attr('y2', function(d,i) { return y(getY(d,i)) })
-          .remove();
-      distY
-          .attr('class', function(d,i) { return 'distY distY-' + i })
-          .attr('x1', x.range()[0])
-          .attr('x2', x.range()[0] - 8)
-      d3.transition(distY)
-          .attr('y1', function(d,i) { return y(getY(d,i)) })
-          .attr('y2', function(d,i) { return y(getY(d,i)) });
+      if (showDistY) {
+        var distY = groups.selectAll('line.distY')
+            .data(function(d) { return d.values })
+        distY.enter().append('line')
+            .attr('y1', function(d,i) { return y0(getY(d,i)) })
+            .attr('y2', function(d,i) { return y0(getY(d,i)) });
+        //d3.transition(distY.exit())
+        d3.transition(groups.exit().selectAll('line.distY'))
+            .attr('y1', function(d,i) { return y(getY(d,i)) })
+            .attr('y2', function(d,i) { return y(getY(d,i)) })
+            .remove();
+        distY
+            .attr('class', function(d,i) { return 'distY distY-' + i })
+            .attr('x1', x.range()[0])
+            .attr('x2', x.range()[0] - 8)
+        d3.transition(distY)
+            .attr('y1', function(d,i) { return y(getY(d,i)) })
+            .attr('y2', function(d,i) { return y(getY(d,i)) });
+      }
 
 
       clearTimeout(timeoutID);
@@ -2969,24 +2883,6 @@ nv.models.scatter = function() {
 
   chart.dispatch = dispatch;
 
-  chart.margin = function(_) {
-    if (!arguments.length) return margin;
-    margin = _;
-    return chart;
-  };
-
-  chart.width = function(_) {
-    if (!arguments.length) return width;
-    width = _;
-    return chart;
-  };
-
-  chart.height = function(_) {
-    if (!arguments.length) return height;
-    height = _;
-    return chart;
-  };
-
   chart.x = function(_) {
     if (!arguments.length) return getX;
     getX = d3.functor(_);
@@ -3002,6 +2898,24 @@ nv.models.scatter = function() {
   chart.size = function(_) {
     if (!arguments.length) return getSize;
     getSize = d3.functor(_);
+    return chart;
+  };
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
+    return chart;
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
     return chart;
   };
 
@@ -3047,6 +2961,18 @@ nv.models.scatter = function() {
     return chart;
   };
 
+  chart.showDistX = function(_) {
+    if (!arguments.length) return showDistX;
+    showDistX = _;
+    return chart;
+  };
+
+  chart.showDistY = function(_) {
+    if (!arguments.length) return showDistY;
+    showDistY = _;
+    return chart;
+  };
+
   chart.clipEdge = function(_) {
     if (!arguments.length) return clipEdge;
     clipEdge = _;
@@ -3077,17 +3003,14 @@ nv.models.scatter = function() {
 
 nv.models.scatterWithLegend = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
-      width = 960,
-      height = 500,
+      width = function() { return 960 },
+      height = function() { return 500 },
       animate = 500,
       xAxisRender = true,
       yAxisRender = true,
       xAxisLabelText = false,
       yAxisLabelText = false,
       color = d3.scale.category10().range(),
-      getX = function(d) { return d.x }, // or d[0]
-      getY = function(d) { return d.y }, // or d[1]
-      getSize = function(d) { return d.size }, // or d[2]
       forceX = [],
       forceY = [],
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
@@ -3103,27 +3026,29 @@ nv.models.scatterWithLegend = function() {
   function chart(selection) {
     selection.each(function(data) {
       var seriesData = data.filter(function(d) { return !d.disabled })
-            .map(function(d) { return d.values });
+            .map(function(d) { 
+              return d.values.map(function(d,i) {
+                return { x: scatter.x()(d,i), y: scatter.y()(d,i) }
+              })
+            }),
+          availableWidth = width() - margin.left - margin.right,
+          availableHeight = height() - margin.top - margin.bottom;
 
-      x   .domain(d3.extent(d3.merge(seriesData).map(getX).concat(forceX) ))
-          .range([0, width - margin.left - margin.right]);
+      x   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.x }).concat(scatter.forceX) ))
+          .range([0, availableWidth]);
 
-      y   .domain(d3.extent(d3.merge(seriesData).map(getY).concat(forceY) ))
-          .range([height - margin.top - margin.bottom, 0]);
+      y   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.y }).concat(scatter.forceY) ))
+          .range([availableHeight, 0]);
 
       scatter
-        .width(width - margin.left - margin.right)
-        .height(height - margin.top - margin.bottom)
+        .width(availableWidth)
+        .height(availableHeight)
+        .xDomain(x.domain())
+        .yDomain(y.domain())
         .color(data.map(function(d,i) {
           return d.color || color[i % 20];
         }).filter(function(d,i) { return !data[i].disabled }))
 
-      xAxis
-        .ticks( width / 100 )
-        .tickSize(-(height - margin.top - margin.bottom), 0);
-      yAxis
-        .ticks( height / 36 )
-        .tickSize(-(width - margin.right - margin.left), 0);
 
 
       var wrap = d3.select(this).selectAll('g.wrap').data([data]);
@@ -3138,8 +3063,6 @@ nv.models.scatterWithLegend = function() {
       legend.dispatch.on('legendClick', function(d,i, that) {
         d.disabled = !d.disabled;
 
-        //d3.select(that).classed('disabled', d.disabled); //TODO: do this from the data, not manually
-
         if (!data.filter(function(d) { return !d.disabled }).length) {
           data.map(function(d) {
             d.disabled = false;
@@ -3149,7 +3072,6 @@ nv.models.scatterWithLegend = function() {
         }
 
         selection.transition(animate).call(chart)
-        //d3.transition(selection).call(chart);
       });
 
       /*
@@ -3180,19 +3102,21 @@ nv.models.scatterWithLegend = function() {
         dispatch.tooltipHide(e);
       });
 
-      legend.width(width/2 - margin.right);
-
-      wrap.select('.legendWrap')
-          .datum(data)
-          .attr('transform', 'translate(' + (width/2 - margin.left) + ',' + (-legend.height()) +')')
-          .call(legend);
-
 
       //TODO: margins should be adjusted based on what components are used: axes, axis labels, legend
       margin.top = legend.height();
 
       var g = wrap.select('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
+      legend.width(availableWidth / 2);
+
+      wrap.select('.legendWrap')
+          .datum(data)
+          .attr('transform', 'translate(' + (availableWidth / 2) + ',' + (-margin.top) +')')
+          .call(legend);
+
 
 
       var scatterWrap = wrap.select('.scatterWrap')
@@ -3203,12 +3127,11 @@ nv.models.scatterWithLegend = function() {
       d3.transition(scatterWrap).call(scatter);
 
 
-
       xAxis
         .domain(x.domain())
         .range(x.range())
-        .ticks( width / 100 )
-        .tickSize(-(height - margin.top - margin.bottom), 0);
+        .ticks( availableWidth / 100 )
+        .tickSize(-availableHeight, 0);
 
       g.select('.x.axis')
           .attr('transform', 'translate(0,' + y.range()[0] + ')');
@@ -3220,8 +3143,8 @@ nv.models.scatterWithLegend = function() {
       yAxis
         .domain(y.domain())
         .range(y.range())
-        .ticks( height / 36 )
-        .tickSize(-(width - margin.right - margin.left), 0);
+        .ticks( availableHeight / 36 )
+        .tickSize( -availableWidth, 0);
 
       d3.transition(g.select('.y.axis'))
           .call(yAxis);
@@ -3233,6 +3156,12 @@ nv.models.scatterWithLegend = function() {
 
 
   chart.dispatch = dispatch;
+  chart.legend = legend;
+  chart.xAxis = xAxis;
+  chart.yAxis = yAxis;
+
+  d3.rebind(chart, scatter, 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id', 'showDistX', 'showDistY');
+
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
@@ -3242,38 +3171,16 @@ nv.models.scatterWithLegend = function() {
 
   chart.width = function(_) {
     if (!arguments.length) return width;
-    width = _;
+    width = d3.functor(_);
     return chart;
   };
 
   chart.height = function(_) {
     if (!arguments.length) return height;
-    height = _;
+    height = d3.functor(_);
     return chart;
   };
 
-  chart.forceX = function(_) {
-    if (!arguments.length) return forceX;
-    forceX = _;
-    scatter.forceX(_);
-    return chart;
-  };
-
-  chart.forceY = function(_) {
-    if (!arguments.length) return forceY;
-    forceY = _;
-    scatter.forceY(_);
-    return chart;
-  };
-
-  chart.animate = function(_) {
-    if (!arguments.length) return animate;
-    animate = _;
-    return chart;
-  };
-
-  chart.xAxis = xAxis;
-  chart.yAxis = yAxis;
 
   return chart;
 }
@@ -3306,41 +3213,44 @@ nv.models.sparkline = function() {
 
       var wrap = d3.select(this).selectAll('g.sparkline').data([data]);
 
-      var gEnter = wrap.enter().append('g');
+      var gEnter = wrap.enter().append('g').attr('class', 'sparkline');
       //var gEnter = svg.enter().append('svg').append('g');
-      gEnter.append('g').attr('class', 'sparkline')
+      //gEnter.append('g').attr('class', 'sparkline')
+      gEnter
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
           //.style('fill', function(d, i){ return d.color || color[i * 2 % 20] })
-          .style('stroke', function(d, i){ return d.color || color[i * 2 % 20] });
+          .style('stroke', function(d,i) { return d.color || color[i * 2 % 20] });
 
-
+/*
       d3.select(this)
           .attr('width', width)
           .attr('height', height);
+         */
 
 
-      var paths = gEnter.select('.sparkline').selectAll('path')
+      //var paths = gEnter.select('.sparkline').selectAll('path')
+      var paths = gEnter.selectAll('path')
           .data(function(d) { return [d] });
       paths.enter().append('path');
       paths.exit().remove();
       paths
           .attr('d', d3.svg.line()
-            .x(function(d) { return x(getX(d)) })
-            .y(function(d) { return y(getY(d)) })
+            .x(function(d,i) { return x(getX(d,i)) })
+            .y(function(d,i) { return y(getY(d,i)) })
           );
 
 
       // TODO: Add CURRENT data point (Need Min, Mac, Current / Most recent)
-      var points = gEnter.select('.sparkline').selectAll('circle.point')
-          .data(function(d) { return d.filter(function(p) { return y.domain().indexOf(p.y) != -1  }) });
+      var points = gEnter.selectAll('circle.point')
+          .data(function(d) { return d.filter(function(p,i) { return y.domain().indexOf(getY(p,i)) != -1 || getX(p,i) == x.domain()[1]  }) });
       points.enter().append('circle').attr('class', 'point');
       points.exit().remove();
       points
-          .attr('cx', function(d) { return x(getX(d)) })
-          .attr('cy', function(d) { return y(getY(d)) })
+          .attr('cx', function(d,i) { return x(getX(d,i)) })
+          .attr('cy', function(d,i) { return y(getY(d,i)) })
           .attr('r', 2)
-          .style('stroke', function(d, i){ return d.y == y.domain()[0] ? '#d62728' : '#2ca02c' })
-          .style('fill', function(d, i){ return d.y == y.domain()[0] ? '#d62728' : '#2ca02c' });
+          .style('stroke', function(d,i) { return d.x == x.domain()[1] ? '#444' : d.y == y.domain()[0] ? '#d62728' : '#2ca02c' })
+          .style('fill', function(d,i) { return d.x == x.domain()[1] ? '#444' : d.y == y.domain()[0] ? '#d62728' : '#2ca02c' });
     });
 
     return chart;
@@ -3399,7 +3309,7 @@ nv.models.sparkline = function() {
 }
 
 nv.models.sparklinePlus = function() {
-  var margin = {top: 15, right: 30, bottom: 3, left: 30},
+  var margin = {top: 15, right: 40, bottom: 3, left: 40},
       width = 400,
       height = 50,
       animate = true,
@@ -3446,12 +3356,11 @@ nv.models.sparklinePlus = function() {
           //.attr('height', height)
           .call(sparkline);
 
-      var hoverArea = sparklineWrap.append('rect').attr('class', 'hoverArea')
-          .attr('width', availableWidth)
-          .attr('height', availableHeight)
-          .on('mousemove', sparklineHover);
-
       var hoverValue = sparklineWrap.append('g').attr('class', 'hoverValue');
+      var hoverArea = sparklineWrap.append('g').attr('class', 'hoverArea');
+
+
+      hoverValue.attr('transform', function(d) { return 'translate(' + x(d) + ',0)' });
 
       var hoverLine = hoverValue.append('line')
           .attr('x1', x.range()[1])
@@ -3460,21 +3369,24 @@ nv.models.sparklinePlus = function() {
           .attr('y2', height)
 
      var hoverX = hoverValue.append('text').attr('class', 'xValue')
-          .attr('transform', function(d) { return 'translate(' + x(d) + ',0)' })
           .attr('text-anchor', 'end')
-          .attr('dy', '1em')
+          .attr('dy', '.9em')
 
      var hoverY = hoverValue.append('text').attr('class', 'yValue')
-          .attr('transform', function(d) { return 'translate(' + x(d) + ',0)' })
+          //.attr('transform', function(d) { return 'translate(' + x(d) + ',0)' })
           .attr('text-anchor', 'start')
-          .attr('dy', '1em')
+          .attr('dy', '.9em')
 
+
+      hoverArea.append('rect')
+          .attr('width', availableWidth)
+          .attr('height', availableHeight)
+          .on('mousemove', sparklineHover);
 
 
 
       function sparklineHover() { 
         var pos = d3.event.offsetX - margin.left;
-        //console.log(data.length, pos, x.invert(pos), x(pos) );
 
         hoverLine
             .attr('x1', pos)
@@ -3482,12 +3394,13 @@ nv.models.sparklinePlus = function() {
 
         hoverX
             .attr('transform', function(d) { return 'translate(' + (pos - 6) + ',' + (-margin.top) + ')' })
-            .text(xTickFormat(pos));
+            //.text(xTickFormat(pos));
+            .text(xTickFormat(Math.round(x.invert(pos)))); //TODO: refactor this line
 
         hoverY
             .attr('transform', function(d) { return 'translate(' + (pos + 6) + ',' + (-margin.top) + ')' })
             //.text(data[pos] && yTickFormat(data[pos].y));
-            .text(yTickFormat(getY(data[Math.round(x.invert(pos))])));
+            .text(yTickFormat(getY(data[Math.round(x.invert(pos))]))); //TODO: refactor this line
       }
 
     });
@@ -3570,7 +3483,7 @@ nv.models.stackedArea = function() {
  *   'default' (input order)
  ************************************/
 
-  var lines = nv.models.line(), //TODO: this really should just be a scatterplot overlayed, not a line
+  var scatter= nv.models.scatter().size(2), //TODO: this really should just be a scatterplot overlayed, not a line
       x = d3.scale.linear(),
       y = d3.scale.linear();
 
@@ -3605,7 +3518,7 @@ nv.models.stackedArea = function() {
             .range([availableHeight, 0]);
 
 
-        lines
+        scatter
           //.interactive(false) //if we were to turn off interactive, the whole line chart should be removed
           .width(availableWidth)
           .height(availableHeight)
@@ -3621,17 +3534,17 @@ nv.models.stackedArea = function() {
         var gEnter = wrap.enter().append('g').attr('class', 'd3stackedarea').append('g');
 
         gEnter.append('g').attr('class', 'areaWrap');
-        gEnter.append('g').attr('class', 'linesWrap');
+        gEnter.append('g').attr('class', 'scatterWrap');
 
 
         var g = wrap.select('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-        var linesWrap = g.select('.linesWrap')
+        var scatterWrap= g.select('.scatterWrap')
             .datum(dataCopy.filter(function(d) { return !d.disabled }))
 
-        d3.transition(linesWrap).call(lines);
+        d3.transition(scatterWrap).call(scatter);
 
 
         var area = d3.svg.area()
@@ -3735,7 +3648,7 @@ nv.models.stackedArea = function() {
 
   chart.dispatch = dispatch;
 
-  lines.dispatch.on('pointMouseover.tooltip', function(e) {
+  scatter.dispatch.on('pointMouseover.tooltip', function(e) {
         dispatch.tooltipShow({
             point: e.point,
             series: e.series,
@@ -3745,7 +3658,7 @@ nv.models.stackedArea = function() {
         });
   });
 
-  lines.dispatch.on('pointMouseout.tooltip', function(e) {
+  scatter.dispatch.on('pointMouseout.tooltip', function(e) {
         dispatch.tooltipHide(e);
   });
 

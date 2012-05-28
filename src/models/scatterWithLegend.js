@@ -1,17 +1,15 @@
 
 nv.models.scatterWithLegend = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
-      width = 960,
-      height = 500,
-      animate = 500,
+      width = function() { return 960 },
+      height = function() { return 500 },
       xAxisRender = true,
       yAxisRender = true,
       xAxisLabelText = false,
       yAxisLabelText = false,
+      showDistX = false,
+      showDistY = false,
       color = d3.scale.category10().range(),
-      getX = function(d) { return d.x }, // or d[0]
-      getY = function(d) { return d.y }, // or d[1]
-      getSize = function(d) { return d.size }, // or d[2]
       forceX = [],
       forceY = [],
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
@@ -27,27 +25,29 @@ nv.models.scatterWithLegend = function() {
   function chart(selection) {
     selection.each(function(data) {
       var seriesData = data.filter(function(d) { return !d.disabled })
-            .map(function(d) { return d.values });
+            .map(function(d) { 
+              return d.values.map(function(d,i) {
+                return { x: scatter.x()(d,i), y: scatter.y()(d,i) }
+              })
+            }),
+          availableWidth = width() - margin.left - margin.right,
+          availableHeight = height() - margin.top - margin.bottom;
 
-      x   .domain(d3.extent(d3.merge(seriesData).map(getX).concat(forceX) ))
-          .range([0, width - margin.left - margin.right]);
+      x   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.x }).concat(scatter.forceX) ))
+          .range([0, availableWidth]);
 
-      y   .domain(d3.extent(d3.merge(seriesData).map(getY).concat(forceY) ))
-          .range([height - margin.top - margin.bottom, 0]);
+      y   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.y }).concat(scatter.forceY) ))
+          .range([availableHeight, 0]);
 
       scatter
-        .width(width - margin.left - margin.right)
-        .height(height - margin.top - margin.bottom)
+        .width(availableWidth)
+        .height(availableHeight)
+        .xDomain(x.domain())
+        .yDomain(y.domain())
         .color(data.map(function(d,i) {
           return d.color || color[i % 20];
         }).filter(function(d,i) { return !data[i].disabled }))
 
-      xAxis
-        .ticks( width / 100 )
-        .tickSize(-(height - margin.top - margin.bottom), 0);
-      yAxis
-        .ticks( height / 36 )
-        .tickSize(-(width - margin.right - margin.left), 0);
 
 
       var wrap = d3.select(this).selectAll('g.wrap').data([data]);
@@ -57,12 +57,11 @@ nv.models.scatterWithLegend = function() {
       gEnter.append('g').attr('class', 'x axis');
       gEnter.append('g').attr('class', 'y axis');
       gEnter.append('g').attr('class', 'scatterWrap');
+      //gEnter.append('g').attr('class', 'distWrap');
 
 
       legend.dispatch.on('legendClick', function(d,i, that) {
         d.disabled = !d.disabled;
-
-        //d3.select(that).classed('disabled', d.disabled); //TODO: do this from the data, not manually
 
         if (!data.filter(function(d) { return !d.disabled }).length) {
           data.map(function(d) {
@@ -72,8 +71,7 @@ nv.models.scatterWithLegend = function() {
           });
         }
 
-        selection.transition(animate).call(chart)
-        //d3.transition(selection).call(chart);
+        selection.transition().call(chart)
       });
 
       /*
@@ -104,13 +102,18 @@ nv.models.scatterWithLegend = function() {
         dispatch.tooltipHide(e);
       });
 
-      legend.width(width/2 - margin.right);
-
-      wrap.select('.legendWrap')
-          .datum(data)
-          .attr('transform', 'translate(' + (width/2 - margin.left) + ',' + (-legend.height()) +')')
-          .call(legend);
-
+      scatter.dispatch.on('pointMouseover.dist', function(d) {
+          scatterWrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
+              .attr('y1', d.pos[1]);
+          scatterWrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
+              .attr('x1', d.pos[0]);
+      });
+      scatter.dispatch.on('pointMouseout.dist', function(d) {
+          scatterWrap.select('.series-' + d.seriesIndex + ' .distX-' + d.pointIndex)
+              .attr('y1', y.range()[0]);
+          scatterWrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
+              .attr('x1', x.range()[0]);
+      });
 
       //TODO: margins should be adjusted based on what components are used: axes, axis labels, legend
       margin.top = legend.height();
@@ -119,20 +122,74 @@ nv.models.scatterWithLegend = function() {
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
+      legend.width(availableWidth / 2);
+
+      wrap.select('.legendWrap')
+          .datum(data)
+          .attr('transform', 'translate(' + (availableWidth / 2) + ',' + (-margin.top) +')')
+          .call(legend);
+
+
+
       var scatterWrap = wrap.select('.scatterWrap')
           .datum(data.filter(function(d) { return !d.disabled }));
 
-      //log(d3.transition()[0][0].duration); //get parent's duration
 
       d3.transition(scatterWrap).call(scatter);
+
+
+//need to fix the point rotate on enable/disable series
+      var distWrap = scatterWrap.selectAll('g.distribution')
+            .data(function(d) { return d })
+
+      distWrap.enter().append('g').attr('class', function(d,i) { return 'distribution series-' + i })
+
+      distWrap.style('stroke', function(d,i) { return color.filter(function(d,i) { return data[i] && !data[i].disabled })[i % 10] })
+
+      var distX = distWrap.selectAll('line.distX')
+            .data(function(d) { return d.values })
+      distX.enter().append('line')
+          //.attr('x1', function(d,i) { return x0(scatter.x()(d,i)) })
+          //.attr('x2', function(d,i) { return x0(scatter.x()(d,i)) })
+      //d3.transition(distX.exit())
+      d3.transition(distWrap.exit().selectAll('line.distX'))
+          .attr('x1', function(d,i) { return x(scatter.x()(d,i)) })
+          .attr('x2', function(d,i) { return x(scatter.x()(d,i)) })
+          .remove();
+      distX
+          .attr('class', function(d,i) { return 'distX distX-' + i })
+          .attr('y1', y.range()[0])
+          .attr('y2', y.range()[0] + 8);
+      d3.transition(distX)
+          .attr('x1', function(d,i) { return x(scatter.x()(d,i)) })
+          .attr('x2', function(d,i) { return x(scatter.x()(d,i)) })
+
+
+        var distY = distWrap.selectAll('line.distY')
+            .data(function(d) { return d.values })
+        distY.enter().append('line')
+            //.attr('y1', function(d,i) { return y0(scatter.y()(d,i)) })
+            //.attr('y2', function(d,i) { return y0(scatter.y()(d,i)) });
+        //d3.transition(distY.exit())
+        d3.transition(distWrap.exit().selectAll('line.distY'))
+            .attr('y1', function(d,i) { return y(scatter.y()(d,i)) })
+            .attr('y2', function(d,i) { return y(scatter.y()(d,i)) })
+            .remove();
+        distY
+            .attr('class', function(d,i) { return 'distY distY-' + i })
+            .attr('x1', x.range()[0])
+            .attr('x2', x.range()[0] - 8)
+        d3.transition(distY)
+            .attr('y1', function(d,i) { return y(scatter.y()(d,i)) })
+            .attr('y2', function(d,i) { return y(scatter.y()(d,i)) });
 
 
 
       xAxis
         .domain(x.domain())
         .range(x.range())
-        .ticks( width / 100 )
-        .tickSize(-(height - margin.top - margin.bottom), 0);
+        .ticks( availableWidth / 100 )
+        .tickSize(-availableHeight, 0);
 
       g.select('.x.axis')
           .attr('transform', 'translate(0,' + y.range()[0] + ')');
@@ -144,8 +201,8 @@ nv.models.scatterWithLegend = function() {
       yAxis
         .domain(y.domain())
         .range(y.range())
-        .ticks( height / 36 )
-        .tickSize(-(width - margin.right - margin.left), 0);
+        .ticks( availableHeight / 36 )
+        .tickSize( -availableWidth, 0);
 
       d3.transition(g.select('.y.axis'))
           .call(yAxis);
@@ -157,6 +214,12 @@ nv.models.scatterWithLegend = function() {
 
 
   chart.dispatch = dispatch;
+  chart.legend = legend;
+  chart.xAxis = xAxis;
+  chart.yAxis = yAxis;
+
+  d3.rebind(chart, scatter, 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id', 'showDistX', 'showDistY');
+
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
@@ -166,38 +229,28 @@ nv.models.scatterWithLegend = function() {
 
   chart.width = function(_) {
     if (!arguments.length) return width;
-    width = _;
+    width = d3.functor(_);
     return chart;
   };
 
   chart.height = function(_) {
     if (!arguments.length) return height;
-    height = _;
+    height = d3.functor(_);
     return chart;
   };
 
-  chart.forceX = function(_) {
-    if (!arguments.length) return forceX;
-    forceX = _;
-    scatter.forceX(_);
+  chart.showDistX = function(_) {
+    if (!arguments.length) return showDistX;
+    showDistX = _;
     return chart;
   };
 
-  chart.forceY = function(_) {
-    if (!arguments.length) return forceY;
-    forceY = _;
-    scatter.forceY(_);
+  chart.showDistY = function(_) {
+    if (!arguments.length) return showDistY;
+    showDistY = _;
     return chart;
   };
 
-  chart.animate = function(_) {
-    if (!arguments.length) return animate;
-    animate = _;
-    return chart;
-  };
-
-  chart.xAxis = xAxis;
-  chart.yAxis = yAxis;
 
   return chart;
 }
