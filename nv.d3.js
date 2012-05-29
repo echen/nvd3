@@ -909,7 +909,7 @@ nv.models.cumulativeLine = function() {
   var margin = {top: 30, right: 20, bottom: 30, left: 60},
       getWidth = function() { return 960 },
       getHeight = function() { return 500 },
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       dotRadius = function() { return 2.5 },
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
@@ -1200,7 +1200,7 @@ nv.models.legend = function() {
   var margin = {top: 5, right: 0, bottom: 5, left: 10},
       width = 400,
       height = 20,
-      color = d3.scale.category10().range();
+      color = d3.scale.category20().range();
 
   var dispatch = d3.dispatch('legendClick', 'legendMouseover', 'legendMouseout');
 
@@ -1310,7 +1310,7 @@ nv.models.line = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID incase user doesn't select one
       getX = function(d) { return d.x }, // accessor to get the x value from a data point
       getY = function(d) { return d.y }, // accessor to get the y value from a data point
@@ -1446,20 +1446,6 @@ nv.models.line = function() {
 
   d3.rebind(chart, scatter, 'size');
 
-  chart.x = function(_) {
-    if (!arguments.length) return getX;
-    getX = _;
-    scatter.x(_);
-    return chart;
-  };
-
-  chart.y = function(_) {
-    if (!arguments.length) return getY;
-    getY = _;
-    scatter.y(_);
-    return chart;
-  };
-
   chart.margin = function(_) {
     if (!arguments.length) return margin;
     margin = _;
@@ -1475,6 +1461,20 @@ nv.models.line = function() {
   chart.height = function(_) {
     if (!arguments.length) return height;
     height = _;
+    return chart;
+  };
+
+  chart.x = function(_) {
+    if (!arguments.length) return getX;
+    getX = _;
+    scatter.x(_);
+    return chart;
+  };
+
+  chart.y = function(_) {
+    if (!arguments.length) return getY;
+    getY = _;
+    scatter.y(_);
     return chart;
   };
 
@@ -1544,7 +1544,7 @@ nv.models.linePlusBar = function() {
       dotRadius = function() { return 2.5 },
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
 
   var x = d3.scale.linear(),
@@ -1591,8 +1591,6 @@ nv.models.linePlusBar = function() {
       lines
         .width(availableWidth)
         .height(availableHeight)
-        //.x(getX)
-        //.y(getY)
         .color(data.map(function(d,i) {
           return d.color || color[i % 10];
         }).filter(function(d,i) { return !data[i].disabled && !data[i].bar }))
@@ -1796,7 +1794,7 @@ nv.models.lineWithFocus = function() {
       height1 = 400,
       height2 = 100,
       dotRadius = function() { return 2.5 },
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
       id = Math.floor(Math.random() * 10000); //Create semi-unique ID incase user doesn't select one
@@ -2152,7 +2150,7 @@ nv.models.lineWithLegend = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
       width = function() { return 960 },
       height = function() { return 500 },
-      color = d3.scale.category10().range();
+      color = d3.scale.category20().range();
 
   var x = d3.scale.linear(),
       y = d3.scale.linear(),
@@ -2589,10 +2587,11 @@ nv.models.pie = function() {
 }
 
 nv.models.scatter = function() {
+  //Default Settings
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       id = Math.floor(Math.random() * 100000), //Create semi-unique ID incase user doesn't selet one
       getX = function(d) { return d.x }, // accessor to get the x value from a data point
       getY = function(d) { return d.y }, // accessor to get the y value from a data point
@@ -2953,7 +2952,7 @@ nv.models.scatterWithLegend = function() {
       yAxisLabelText = false,
       showDistX = false,
       showDistY = false,
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       forceX = [],
       forceY = [];
 
@@ -2963,7 +2962,8 @@ nv.models.scatterWithLegend = function() {
       yAxis = nv.models.axis().scale(y).orient('left').tickPadding(10),
       legend = nv.models.legend().height(30),
       scatter = nv.models.scatter(),
-      dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
+      dispatch = d3.dispatch('tooltipShow', 'tooltipHide'),
+      x0, y0;
 
 
   function chart(selection) {
@@ -2976,6 +2976,9 @@ nv.models.scatterWithLegend = function() {
             }),
           availableWidth = width() - margin.left - margin.right,
           availableHeight = height() - margin.top - margin.bottom;
+
+      x0 = x0 || x;
+      y0 = y0 || y;
 
       x   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.x }).concat(scatter.forceX) ))
           .range([0, availableWidth]);
@@ -3006,6 +3009,7 @@ nv.models.scatterWithLegend = function() {
 
 
       //TODO: margins should be adjusted based on what components are used: axes, axis labels, legend
+      //TODO: Fix height issue on first render if legend height is larger than margin.top, NEED TO FIX EVERY MODEL WITH A LEGEND
       margin.top = legend.height();
 
       var g = wrap.select('g')
@@ -3027,10 +3031,9 @@ nv.models.scatterWithLegend = function() {
       d3.transition(scatterWrap).call(scatter);
 
 
-      //TODO: FIX the dist line rotate on enable/disable series
       if ( showDistX || showDistY) {
         var distWrap = scatterWrap.selectAll('g.distribution')
-              .data(function(d) { return d })
+            .data(function(d) { return d }, function(d) { return d.key });
 
         distWrap.enter().append('g').attr('class', function(d,i) { return 'distribution series-' + i })
 
@@ -3041,8 +3044,8 @@ nv.models.scatterWithLegend = function() {
         var distX = distWrap.selectAll('line.distX')
               .data(function(d) { return d.values })
         distX.enter().append('line')
-            //.attr('x1', function(d,i) { return x0(scatter.x()(d,i)) })
-            //.attr('x2', function(d,i) { return x0(scatter.x()(d,i)) })
+            .attr('x1', function(d,i) { return x0(scatter.x()(d,i)) })
+            .attr('x2', function(d,i) { return x0(scatter.x()(d,i)) })
         //d3.transition(distX.exit())
         d3.transition(distWrap.exit().selectAll('line.distX'))
             .attr('x1', function(d,i) { return x(scatter.x()(d,i)) })
@@ -3062,8 +3065,8 @@ nv.models.scatterWithLegend = function() {
         var distY = distWrap.selectAll('line.distY')
             .data(function(d) { return d.values })
         distY.enter().append('line')
-            //.attr('y1', function(d,i) { return y0(scatter.y()(d,i)) })
-            //.attr('y2', function(d,i) { return y0(scatter.y()(d,i)) });
+            .attr('y1', function(d,i) { return y0(scatter.y()(d,i)) })
+            .attr('y2', function(d,i) { return y0(scatter.y()(d,i)) });
         //d3.transition(distY.exit())
         d3.transition(distWrap.exit().selectAll('line.distY'))
             .attr('y1', function(d,i) { return y(scatter.y()(d,i)) })
@@ -3074,8 +3077,7 @@ nv.models.scatterWithLegend = function() {
             .attr('x1', x.range()[0])
             .attr('x2', x.range()[0] - 8)
         d3.transition(distY)
-            .attr('y1', function(d,i) { return y(scatter.y()(d,i)) })
-            .attr('y2', function(d,i) { return y(scatter.y()(d,i)) });
+            .attr('y1', function(d,i) { return y(scatter.y()(d,i)) }) .attr('y2', function(d,i) { return y(scatter.y()(d,i)) });
       }
 
 
@@ -3158,6 +3160,11 @@ nv.models.scatterWithLegend = function() {
           scatterWrap.select('.series-' + d.seriesIndex + ' .distY-' + d.pointIndex)
               .attr('x1', x.range()[0]);
       });
+
+
+      //store old scales for use in transitions on update, to animate from old to new positions, and sizes
+      x0 = x.copy();
+      y0 = y.copy();
 
     });
 
@@ -3337,7 +3344,7 @@ nv.models.sparklinePlus = function() {
       animate = true,
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(),
       id = Math.floor(Math.random() * 100000), //Create semi-unique ID incase user doesn't selet one
       xTickFormat = d3.format(',r'),
       yTickFormat = d3.format(',.2f');
@@ -3485,15 +3492,15 @@ nv.models.stackedArea = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
-      color = d3.scale.category10().range(),
-      getX = function(d) { return d.x },
-      getY = function(d) { return d.y },
+      color = d3.scale.category20().range(),
+      getX = function(d) { return d.x }, // accessor to get the x value from a data point
+      getY = function(d) { return d.y }, // accessor to get the y value from a data point
       style = 'stack',
       offset = 'zero',
       order = 'default',
       interactive = true, // If true, plots a voronoi overlay for advanced point interection
       clipEdge = false, // if true, masks lines within x and y scale
-      xDomain, yDomain;
+      xDomain, yDomain; // Used to manually set the x and y domain, good to save time if calculation has already been made
 
 /************************************
  * offset:
@@ -3773,7 +3780,7 @@ nv.models.stackedAreaWithLegend = function() {
       getWidth = function() { return 960 },
       getHeight = function() { return 500 },
       dotRadius = function() { return 2.5 },
-      color = d3.scale.category10().range();
+      color = d3.scale.category20().range();
 
   var x = d3.scale.linear(),
       y = d3.scale.linear(),
@@ -3824,6 +3831,7 @@ nv.models.stackedAreaWithLegend = function() {
       stacked
         .width(availableWidth)
         .height(availableHeight)
+        .color(color)
 
 
       var wrap = d3.select(this).selectAll('g.wrap').data([data]);
@@ -3844,7 +3852,10 @@ nv.models.stackedAreaWithLegend = function() {
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      legend.width(width/2 - margin.right);
+      legend
+        .width(width/2 - margin.right)
+        .color(color);
+
       g.select('.legendWrap')
           .datum(data)
           .attr('transform', 'translate(' + (width/2 - margin.left) + ',' + (-margin.top) +')')

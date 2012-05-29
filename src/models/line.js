@@ -4,7 +4,7 @@ nv.models.line = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
-      color = d3.scale.category10().range(),
+      color = d3.scale.category20().range(), // array of colors to be used in order
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID incase user doesn't select one
       getX = function(d) { return d.x }, // accessor to get the x value from a data point
       getY = function(d) { return d.y }, // accessor to get the y value from a data point
@@ -140,20 +140,6 @@ nv.models.line = function() {
 
   d3.rebind(chart, scatter, 'size');
 
-  chart.x = function(_) {
-    if (!arguments.length) return getX;
-    getX = _;
-    scatter.x(_);
-    return chart;
-  };
-
-  chart.y = function(_) {
-    if (!arguments.length) return getY;
-    getY = _;
-    scatter.y(_);
-    return chart;
-  };
-
   chart.margin = function(_) {
     if (!arguments.length) return margin;
     margin = _;
@@ -169,6 +155,20 @@ nv.models.line = function() {
   chart.height = function(_) {
     if (!arguments.length) return height;
     height = _;
+    return chart;
+  };
+
+  chart.x = function(_) {
+    if (!arguments.length) return getX;
+    getX = _;
+    scatter.x(_);
+    return chart;
+  };
+
+  chart.y = function(_) {
+    if (!arguments.length) return getY;
+    getY = _;
+    scatter.y(_);
     return chart;
   };
 
