@@ -1,5 +1,5 @@
 
-nv.models.multiBarWithLegend = function() {
+nv.models.multiBarHorizontalWithLegend = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
       width = function() { return 960 },
       height = function() { return 500 },
@@ -8,11 +8,11 @@ nv.models.multiBarWithLegend = function() {
   //var x = d3.scale.linear(),
   var x = d3.scale.ordinal(),
       y = d3.scale.linear(),
-      xAxis = nv.models.axis().scale(x).orient('bottom').highlightZero(false),
-      yAxis = nv.models.axis().scale(y).orient('left'),
+      xAxis = nv.models.axis().scale(x).orient('left').highlightZero(false),
+      yAxis = nv.models.axis().scale(y).orient('bottom'),
       legend = nv.models.legend().height(30),
       controls = nv.models.legend().height(30),
-      multibar = nv.models.multiBar().stacked(false),
+      multibar = nv.models.multiBarHorizontal().stacked(false),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
 
   //TODO: let user select default
@@ -50,11 +50,11 @@ nv.models.multiBarWithLegend = function() {
           //.range([0, availableWidth]);
 
       x   .domain(d3.merge(seriesData).map(function(d) { return d.x }))
-          .rangeBands([0, availableWidth], .1);
+          .rangeBands([0, availableHeight], .1);
           //.rangeRoundBands([0, availableWidth], .1);
 
       y   .domain(d3.extent(d3.merge(seriesData).map(function(d) { return d.y }).concat(multibar.forceY) ))
-          .range([availableHeight, 0]);
+          .range([0, availableWidth]);
 
       multibar
         .width(availableWidth)
@@ -110,11 +110,11 @@ nv.models.multiBarWithLegend = function() {
         .scale(x)
         //.domain(x.domain())
         //.range(x.range())
-        .ticks( availableWidth / 100 )
-        .tickSize(-availableHeight, 0);
+        .ticks( availableHeight / 24 )
+        .tickSize(-availableWidth, 0);
 
-      g.select('.x.axis')
-          .attr('transform', 'translate(0,' + y.range()[0] + ')');
+      //g.select('.x.axis')
+          //.attr('transform', 'translate(0,' + y.range()[0] + ')');
       d3.transition(g.select('.x.axis'))
           .call(xAxis);
 
@@ -133,9 +133,11 @@ nv.models.multiBarWithLegend = function() {
       yAxis
         .domain(y.domain())
         .range(y.range())
-        .ticks( availableHeight / 36 )
-        .tickSize( -availableWidth, 0);
+        .ticks( availableWidth / 100 )
+        .tickSize( -availableHeight, 0);
 
+      g.select('.y.axis')
+          .attr('transform', 'translate(0,' + availableHeight + ')');
       d3.transition(g.select('.y.axis'))
           .call(yAxis);
 

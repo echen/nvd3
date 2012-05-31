@@ -6,9 +6,12 @@ nv.models.scatter = function() {
       height = 500,
       color = d3.scale.category20().range(), // array of colors to be used in order
       id = Math.floor(Math.random() * 100000), //Create semi-unique ID incase user doesn't selet one
+      x = d3.scale.linear(),
+      y = d3.scale.linear(),
+      z = d3.scale.sqrt(), //sqrt because point size is done by area, not radius
       getX = function(d) { return d.x }, // accessor to get the x value from a data point
       getY = function(d) { return d.y }, // accessor to get the y value from a data point
-      getSize = function(d) { return d.size }, // accessor to get the point radius from a data point
+      getSize = function(d) { return d.size }, // accessor to get the point radius from a data point //TODO: consider renamig size to z
       forceX = [], // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
       forceY = [], // List of numbers to Force into the Y scale 
       forceSize = [], // List of numbers to Force into the Size scale 
@@ -18,24 +21,14 @@ nv.models.scatter = function() {
       clipRadius = function() { return 25 }, // function to get the radius for point clips
       xDomain, yDomain, sizeDomain; // Used to manually set the x and y domain, good to save time if calculation has already been made
 
-  var x = d3.scale.linear(),
-      y = d3.scale.linear(),
-      z = d3.scale.sqrt(), //sqrt because point size is done by area, not radius
-      dispatch = d3.dispatch('pointClick', 'pointMouseover', 'pointMouseout'),//TODO: consider renaming to elementMouseove and elementMouseout for consistency
+  var dispatch = d3.dispatch('elementClick', 'elementMouseover', 'elementMouseout'),//TODO: consider renaming to elementMouseove and elementMouseout for consistency
       x0, y0, z0,
       timeoutID;
 
   function chart(selection) {
     selection.each(function(data) {
-      //var seriesData = data.map(function(d) { 
-      var seriesData = (xDomain && yDomain && sizeDomain) ? [] : // if we know xDomain and yDomain and sizeDomain, no need to calculate.... if Size is constant remember to set sizeDomain to speed up performance
-        //console.log('recalculating');
-            data.map(function(d) { 
-              return d.values.map(function(d,i) {
-                return { x: getX(d,i), y: getY(d,i), size: getSize(d,i) }
-              })
-            }),
-          availableWidth = width - margin.left - margin.right,
+      //var seriesData = data.map(function(d) {
+      var availableWidth = width - margin.left - margin.right,
           availableHeight = height - margin.top - margin.bottom;
 
       //store old scales if they exist
@@ -46,8 +39,6 @@ nv.models.scatter = function() {
       //add series index to each data point for reference
       data = data.map(function(series, i) {
         series.values = series.values.map(function(point) {
-          //point.label = series.label;
-          //point.color = series.color;
           point.series = i;
           return point;
         });
@@ -55,7 +46,16 @@ nv.models.scatter = function() {
       });
 
 
+      // slight remap of the data for use in calculating the scales domains
+      var seriesData = (xDomain && yDomain && sizeDomain) ? [] : // if we know xDomain and yDomain and sizeDomain, no need to calculate.... if Size is constant remember to set sizeDomain to speed up performance
+            data.map(function(d) {
+              return d.values.map(function(d,i) {
+                return { x: getX(d,i), y: getY(d,i), size: getSize(d,i) }
+              })
+            });
+
       //TODO: figure out the best way to deal with scales with equal MIN and MAX
+      //TODO: think of a good way to re-use scales
       x   .domain(xDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.x }).concat(forceX)))
           .range([0, availableWidth]);
 
@@ -71,24 +71,22 @@ nv.models.scatter = function() {
       var wrapEnter = wrap.enter().append('g').attr('class', 'd3scatter');
       var defsEnter = wrapEnter.append('defs');
       var gEnter = wrapEnter.append('g');
+      var g = wrap.select('g')
 
       gEnter.append('g').attr('class', 'groups');
 
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      if (clipEdge) {
-        defsEnter.append('clipPath')
-            .attr('id', 'edge-clip-' + id)
-          .append('rect');
+      defsEnter.append('clipPath')
+          .attr('id', 'edge-clip-' + id)
+        .append('rect');
 
-        wrap.select('#edge-clip-' + id + ' rect')
-            .attr('width', availableWidth)
-            .attr('height', availableHeight);
+      wrap.select('#edge-clip-' + id + ' rect')
+          .attr('width', availableWidth)
+          .attr('height', availableHeight);
 
-        gEnter
-            .attr('clip-path', 'url(#edge-clip-' + id + ')');
-      }
+      g   .attr('clip-path', clipEdge ? 'url(#edge-clip-' + id + ')' : '');
 
 
 
@@ -106,7 +104,6 @@ nv.models.scatter = function() {
             return group.values.map(function(point, pointIndex) {
               // Adding noise to make duplicates very unlikely
               // Inject series and point index for reference
-              // TODO: see how much time this consumes
               return [x(getX(point,pointIndex)) * (Math.random() / 1e12 + 1)  , y(getY(point,pointIndex)) * (Math.random() / 1e12 + 1), groupIndex, pointIndex]; //temp hack to add noise untill I think of a better way so there are no duplicates
             })
           })
@@ -146,7 +143,7 @@ nv.models.scatter = function() {
               var series = data[d.series],
                   point  = series.values[d.point];
 
-              dispatch.pointClick({
+              dispatch.elementClick({
                 point: point,
                 series:series,
                 pos: [x(getX(point, d.point)) + margin.left, y(getY(point, d.point)) + margin.top],
@@ -158,7 +155,7 @@ nv.models.scatter = function() {
               var series = data[d.series],
                   point  = series.values[d.point];
 
-              dispatch.pointMouseover({
+              dispatch.elementMouseover({
                 point: point,
                 series:series,
                 pos: [x(getX(point, d.point)) + margin.left, y(getY(point, d.point)) + margin.top],
@@ -167,7 +164,7 @@ nv.models.scatter = function() {
               });
             })
             .on('mouseout', function(d, i) {
-              dispatch.pointMouseout({
+              dispatch.elementMouseout({
                 point: data[d.series].values[d.point],
                 series: data[d.series],
                 seriesIndex: d.series,
@@ -175,12 +172,12 @@ nv.models.scatter = function() {
               });
             });
 
-        dispatch.on('pointMouseover.point', function(d) {
+        dispatch.on('elementMouseover.point', function(d) {
             wrap.select('.series-' + d.seriesIndex + ' .point-' + d.pointIndex)
                 .classed('hover', true);
         });
 
-        dispatch.on('pointMouseout.point', function(d) {
+        dispatch.on('elementMouseout.point', function(d) {
             wrap.select('.series-' + d.seriesIndex + ' circle.point-' + d.pointIndex)
                 .classed('hover', false);
         });
@@ -201,7 +198,7 @@ nv.models.scatter = function() {
           .remove();
       groups
           .attr('class', function(d,i) { return 'group series-' + i })
-          .classed('hover', function(d) { return d.hover && !d.disabled });
+          .classed('hover', function(d) { return d.hover });
       d3.transition(groups)
           .style('fill', function(d,i) { return color[i % 20] })
           .style('stroke', function(d,i) { return color[i % 20] })
@@ -278,6 +275,24 @@ nv.models.scatter = function() {
   chart.height = function(_) {
     if (!arguments.length) return height;
     height = _;
+    return chart;
+  };
+
+  chart.xScale = function(_) {
+    if (!arguments.length) return x;
+    x = _;
+    return chart;
+  };
+
+  chart.yScale = function(_) {
+    if (!arguments.length) return y;
+    y = _;
+    return chart;
+  };
+
+  chart.zScale = function(_) {
+    if (!arguments.length) return z;
+    z = _;
     return chart;
   };
 
