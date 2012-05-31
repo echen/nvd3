@@ -91,7 +91,7 @@ nv.models.linePlusBar = function() {
       });
 
 
-      lines.dispatch.on('pointMouseover.tooltip', function(e) {
+      lines.dispatch.on('elementMouseover.tooltip', function(e) {
         dispatch.tooltipShow({
           point: e.point,
           series: e.series,
@@ -101,20 +101,15 @@ nv.models.linePlusBar = function() {
         });
       });
 
-      lines.dispatch.on('pointMouseout.tooltip', function(e) {
+      lines.dispatch.on('elementMouseout.tooltip', function(e) {
         dispatch.tooltipHide(e);
       });
 
 
 
       bars.dispatch.on('elementMouseover.tooltip', function(e) {
-        dispatch.tooltipShow({
-          point: e.point,
-          series: e.series,
-          pos: [e.pos[0] + margin.left, e.pos[1] + margin.top],
-          seriesIndex: e.seriesIndex,
-          pointIndex: e.pointIndex
-        });
+        e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
+        dispatch.tooltipShow(e);
       });
 
       bars.dispatch.on('elementMouseout.tooltip', function(e) {
