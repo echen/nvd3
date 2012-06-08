@@ -21,16 +21,18 @@ can point out a bug or two.
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)
+- [Interactive Sparkline](examples/sparklineplus.html)
 - [Scatterplot](examples/scatterWithLegend.html)
 - [Stacked/Stream/Expanded Area](examples/stackedAreaWithLegend.html)
-- [Simple Bar](examples/bar.html)
 - [Grouped/Stacked Bar](examples/multiBarWithLegend.html)
+- [Horizontal Grouped Bar](examples/multiBarHorizontalWithLegend.html)
 - [Line and Bar Combo with two Y Axes](examples/linePlusBar.html)
 
 
 ## 'Ready to Go' Charts (experimental)
 
 - [Simple Line](ghpages/lineChart.html)
+- [Discrete Bar](examples/discreteBarChart.html)
 
 
 ## Resources
