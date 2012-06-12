@@ -14,11 +14,7 @@ nv.addGraph(function() {
     .transition().duration(500)
       .call(chart);
 
-  nv.utils.windowResize(function() { 
-    d3.select('#chart svg')
-      .transition().duration(0)
-        .call(chart);
-  });
+  nv.utils.windowResize(chart.update);
 
   return chart;
 });
