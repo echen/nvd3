@@ -18,13 +18,13 @@ can point out a bug or two.
 ## Charts
 
 - [Simple Line](ghpages/simpleLine.html)
+- [Discrete Bar](ghpages/discreteBar.html)
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)
 - [Interactive Sparkline](examples/sparklineplus.html)
 - [Scatterplot](examples/scatterWithLegend.html)
 - [Stacked/Stream/Expanded Area](examples/stackedAreaWithLegend.html)
-- [Discrete Bar](examples/discreteBarChart.html)
 - [Grouped/Stacked Bar](examples/multiBarWithLegend.html)
 - [Horizontal Grouped Bar](examples/multiBarHorizontalWithLegend.html)
 - [Line and Bar Combo with two Y Axes](examples/linePlusBar.html)
