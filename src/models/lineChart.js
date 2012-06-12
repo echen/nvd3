@@ -21,7 +21,6 @@ nv.models.lineChart = function() {
   var showTooltip = function(e, offsetElement) {
     //console.log('left: ' + offsetElement.offsetLeft);
     //console.log('top: ' + offsetElement.offsetLeft);
-    console.log(offsetElement.offsetLeft);
 
     //TODO: FIX offsetLeft and offSet top do not work if container is shifted anywhere
     //var offsetElement = document.getElementById(selector.substr(1)),
