@@ -5,6 +5,8 @@ nv.addGraph({
         .x(function(d) { return d.label })
         .y(function(d) { return d.value })
         .margin({top: 30, right: 20, bottom: 50, left: 160})
+        .showValues(true)
+        .tooltips(false)
         .showControls(false);
 
     chart.yAxis
