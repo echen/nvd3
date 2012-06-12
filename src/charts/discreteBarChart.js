@@ -25,7 +25,7 @@ nv.charts.discreteBar = function() {
 
   //setting component defaults
   graph.xAxis.tickFormat(function(d) { return d });
-  graph.yAxis.tickFormat(d3.format(',.2f'));
+  graph.yAxis.tickFormat(d3.format(',.f'));
 
 
   //TODO: consider a method more similar to how the models are built
@@ -76,7 +76,8 @@ nv.charts.discreteBar = function() {
             d3.select(selector + ' svg')
                 .attr('width', graph.width()()) //need to set SVG dimensions, chart is not aware of the SVG component
                 .attr('height', graph.height()())
-                .call(graph);
+                .transition().duration(duration).call(graph);
+                //.call(graph);
           }
         );
       }
@@ -147,7 +148,7 @@ nv.charts.discreteBar = function() {
     return chart;
   };
 
-  d3.rebind(chart, graph, 'x', 'y');
+  d3.rebind(chart, graph, 'x', 'y', 'staggerLabels');
 
   chart.graph = graph; // Give direct access for getter/setters, and dispatchers
 

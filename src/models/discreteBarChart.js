@@ -1,10 +1,16 @@
 
-nv.models.discreteBarWithAxes = function() {
+nv.models.discreteBarChart = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
-      width = function() { return 960 },
-      height = function() { return 500 },
+      width = null,
+      height = null,
       color = d3.scale.category20().range(),
-      staggerLabels = false;
+      staggerLabels = false,
+      tooltips = true,
+      tooltip = function(key, x, y, e, graph) { 
+        return '<h3>' + x + '</h3>' +
+               '<p>' +  y + '</p>'
+      };
+
 
   var discretebar = nv.models.discreteBar(),
       x = discretebar.xScale(),
@@ -12,6 +18,26 @@ nv.models.discreteBarWithAxes = function() {
       xAxis = nv.models.axis().scale(x).orient('bottom').highlightZero(false),
       yAxis = nv.models.axis().scale(y).orient('left'),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
+
+  xAxis.tickFormat(function(d) { return d });
+  yAxis.tickFormat(d3.format(',.1f'));
+
+
+  var showTooltip = function(e, offsetElement) {
+    //console.log('left: ' + offsetElement.offsetLeft);
+    //console.log('top: ' + offsetElement.offsetLeft);
+
+    //TODO: FIX offsetLeft and offSet top do not work if container is shifted anywhere
+    //var offsetElement = document.getElementById(selector.substr(1)),
+    var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
+        top = e.pos[1] + ( offsetElement.offsetTop || 0),
+        x = xAxis.tickFormat()(discretebar.x()(e.point)),
+        y = yAxis.tickFormat()(discretebar.y()(e.point)),
+        content = tooltip(e.series.key, x, y, e, chart);
+
+    nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's');
+  };
+
 
   //TODO: let user select default
   var controlsData = [
@@ -21,16 +47,12 @@ nv.models.discreteBarWithAxes = function() {
 
   function chart(selection) {
     selection.each(function(data) {
-      var availableWidth = width() - margin.left - margin.right,
-          availableHeight = height() - margin.top - margin.bottom;
+      var container = d3.select(this);
 
-      var seriesData = data.filter(function(d) { return !d.disabled })
-          .map(function(d) { 
-            return d.values.map(function(d,i) {
-              return { x: discretebar.x()(d,i), y: discretebar.y()(d,i) }
-            })
-          });
-
+      var availableWidth = (width  || parseInt(container.style('width')) || 960)
+                             - margin.left - margin.right,
+          availableHeight = (height || parseInt(container.style('height')) || 400)
+                             - margin.top - margin.bottom;
 
 
       discretebar
@@ -38,7 +60,7 @@ nv.models.discreteBarWithAxes = function() {
         .height(availableHeight);
 
 
-      var wrap = d3.select(this).selectAll('g.wrap.discreteBarWithAxes').data([data]);
+      var wrap = container.selectAll('g.wrap.discreteBarWithAxes').data([data]);
       var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 discreteBarWithAxes').append('g');
 
       gEnter.append('g').attr('class', 'x axis');
@@ -65,7 +87,7 @@ nv.models.discreteBarWithAxes = function() {
         .tickSize(-availableHeight, 0);
 
       g.select('.x.axis')
-          .attr('transform', 'translate(0,' + y.range()[0] + ')');
+          .attr('transform', 'translate(0,' + (y.range()[0] + (discretebar.showValues() ? 16 : 0)) + ')');
       d3.transition(g.select('.x.axis'))
           .call(xAxis);
 
@@ -77,13 +99,6 @@ nv.models.discreteBarWithAxes = function() {
             .selectAll('text')
             .attr('transform', function(d,i,j) { return 'translate(0,' + (j % 2 == 0 ? '0' : '12') + ')' })
 
-          /*
-      xTicks.filter(function(d,i) {
-            return i % Math.ceil(data[0].values.length / (availableWidth / 100)) !== 0;
-          })
-          .selectAll('line, text')
-          .style('opacity', 0)
-         */
 
       yAxis
         .scale(y)
@@ -98,10 +113,12 @@ nv.models.discreteBarWithAxes = function() {
         e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
         dispatch.tooltipShow(e);
       });
+      if (tooltips) dispatch.on('tooltipShow', function(e) { showTooltip(e, container[0][0]) } ); // TODO: maybe merge with above?
 
       discretebar.dispatch.on('elementMouseout.tooltip', function(e) {
         dispatch.tooltipHide(e);
       });
+      if (tooltips) dispatch.on('tooltipHide', nv.tooltip.cleanup);
 
     });
 
@@ -113,7 +130,7 @@ nv.models.discreteBarWithAxes = function() {
   chart.xAxis = xAxis;
   chart.yAxis = yAxis;
 
-  d3.rebind(chart, discretebar, 'x', 'y', 'xDomain', 'yDomain', 'forceX', 'forceY', 'clipEdge', 'id');
+  d3.rebind(chart, discretebar, 'x', 'y', 'xDomain', 'yDomain', 'forceX', 'forceY', 'id', 'showValues', 'valueFormat');
 
 
   chart.margin = function(_) {
@@ -144,6 +161,18 @@ nv.models.discreteBarWithAxes = function() {
   chart.staggerLabels = function(_) {
     if (!arguments.length) return staggerLabels;
     staggerLabels = _;
+    return chart;
+  };
+
+  chart.tooltips = function(_) {
+    if (!arguments.length) return tooltips;
+    tooltips = _;
+    return chart;
+  };
+
+  chart.tooltipContent = function(_) {
+    if (!arguments.length) return tooltip;
+    tooltip = _;
     return chart;
   };
 

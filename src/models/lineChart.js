@@ -1,12 +1,15 @@
 
-nv.models.lineWithLegend = function() {
+nv.models.lineChart = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
       color = d3.scale.category20().range(),
-      width, height;
+      width = null, 
+      height = null,
+      tooltip = function(key, x, y, e, graph) { 
+        return '<h3>' + key + '</h3>' +
+               '<p>' +  y + ' at ' + x + '</p>'
+      };
 
   var lines = nv.models.line(),
-      //x = d3.scale.linear(),
-      //y = d3.scale.linear(),
       x = lines.xScale(),
       y = lines.yScale(),
       xAxis = nv.models.axis().scale(x).orient('bottom'),
@@ -15,12 +18,29 @@ nv.models.lineWithLegend = function() {
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
 
 
+  var showTooltip = function(e, offsetElement) {
+    //console.log('left: ' + offsetElement.offsetLeft);
+    //console.log('top: ' + offsetElement.offsetLeft);
+
+    //TODO: FIX offsetLeft and offSet top do not work if container is shifted anywhere
+    //var offsetElement = document.getElementById(selector.substr(1)),
+    var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
+        top = e.pos[1] + ( offsetElement.offsetTop || 0),
+        x = xAxis.tickFormat()(lines.x()(e.point)),
+        y = yAxis.tickFormat()(lines.y()(e.point)),
+        content = tooltip(e.series.key, x, y, e, chart);
+
+    nv.tooltip.show([left, top], content);
+  };
+
+
   function chart(selection) {
     selection.each(function(data) {
+      var container = d3.select(this);
 
-      var availableWidth = (width  || parseInt(d3.select(this).style('width')) || 960)
+      var availableWidth = (width  || parseInt(container.style('width')) || 960)
                              - margin.left - margin.right,
-          availableHeight = (height || parseInt(d3.select(this).style('height')) || 400)
+          availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
 
@@ -32,7 +52,7 @@ nv.models.lineWithLegend = function() {
           }).filter(function(d,i) { return !data[i].disabled }));
 
 
-      var wrap = d3.select(this).selectAll('g.wrap.lineWithLegend').data([data]);
+      var wrap = container.selectAll('g.wrap.lineWithLegend').data([data]);
       var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 lineWithLegend').append('g');
 
       gEnter.append('g').attr('class', 'x axis');
@@ -67,8 +87,7 @@ nv.models.lineWithLegend = function() {
 
 
       xAxis
-        .domain(x.domain())
-        .range(x.range())
+        .scale(x)
         .ticks( availableWidth / 100 )
         .tickSize(-availableHeight, 0);
 
@@ -79,8 +98,7 @@ nv.models.lineWithLegend = function() {
 
 
       yAxis
-        .domain(y.domain())
-        .range(y.range())
+        .scale(y)
         .ticks( availableHeight / 36 )
         .tickSize( -availableWidth, 0);
 
@@ -118,26 +136,29 @@ nv.models.lineWithLegend = function() {
 */
 
       lines.dispatch.on('elementMouseover.tooltip', function(e) {
-        dispatch.tooltipShow({
-          point: e.point,
-          series: e.series,
-          pos: [e.pos[0] + margin.left, e.pos[1] + margin.top],
-          seriesIndex: e.seriesIndex,
-          pointIndex: e.pointIndex
-        });
+        e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
+        dispatch.tooltipShow(e);
       });
+      dispatch.on('tooltipShow', function(e) { showTooltip(e, container[0][0]) } ); // TODO: maybe merge with above?
 
       lines.dispatch.on('elementMouseout.tooltip', function(e) {
         dispatch.tooltipHide(e);
       });
+      dispatch.on('tooltipHide', nv.tooltip.cleanup);
 
     });
 
 
+    /*
     // If the legend changed the margin's height, need to recalc positions... should think of a better way to prevent duplicate work
     if (margin.top != legend.height())
       chart(selection);
- 
+     */
+
+
+    //TODO: decide if this is a good idea, and if it should be in all models
+    chart.update = function() { chart(selection) };
+
 
     return chart;
   }

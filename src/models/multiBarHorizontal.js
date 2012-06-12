@@ -1,29 +1,22 @@
 
-/***
- * This should be pretty close to identical to the multiBar model, but this model
- * has the bars horizontal.
- * Currently naming the vertical axis X, due to helper functions that think the 
- * bars are vertical
- */
-
 nv.models.multiBarHorizontal = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID in case user doesn't select one
+      x = d3.scale.ordinal(),
+      y = d3.scale.linear(),
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
       forceY = [0], // 0 is forced by default.. this makes sense for the majority of bar graphs... user can always do chart.forceY([]) to remove
-      clipEdge = true,
-      stacked = false,
       color = d3.scale.category20().range(),
+      stacked = false,
+      showValues = false,
+      valueFormat = d3.format(',.2f'),
       xDomain, yDomain,
       x0, y0;
 
-  //var x = d3.scale.linear(),
-  var x = d3.scale.ordinal(),
-      y = d3.scale.linear(),
-      dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout');
+  var dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout');
 
 
   function chart(selection) {
@@ -35,15 +28,12 @@ nv.models.multiBarHorizontal = function() {
       x0 = x0 || x;
       y0 = y0 || y;
 
-      if (stacked) {
-      //var stackedData = d3.layout.stack()
+      if (stacked)
         data = d3.layout.stack()
                      .offset('zero')
                      .values(function(d){ return d.values })
                      .y(getY)
                      (data);
-      }
-
 
 
       //add series index to each data point for reference
@@ -63,7 +53,7 @@ nv.models.multiBarHorizontal = function() {
               })
             });
 
-      x   .domain(d3.merge(seriesData).map(function(d) { return d.x }))
+      x   .domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
           .rangeBands([0, availableHeight], .1);
 
       y   .domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.y + (stacked ? d.y0 : 0) }).concat(forceY)))
@@ -83,29 +73,11 @@ nv.models.multiBarHorizontal = function() {
 
 
 
-      defsEnter.append('clipPath')
-          .attr('id', 'edge-clip-' + id)
-        .append('rect');
-      wrap.select('#edge-clip-' + id + ' rect')
-          .attr('width', availableWidth)
-          .attr('height', availableHeight);
-
-      g   .attr('clip-path', clipEdge ? 'url(#edge-clip-' + id + ')' : '');
-
-
-
       var groups = wrap.select('.groups').selectAll('.group')
           .data(function(d) { return d }, function(d) { return d.key });
       groups.enter().append('g')
           .style('stroke-opacity', 1e-6)
-          .style('fill-opacity', 1e-6)
-          /*
-          .attr('transform', function(d,i) {
-              return stacked ? 
-                        'translate(0,0)'
-                      : 'translate(' + (i * x.rangeBand() / data.length ) + ',0)'
-          });
-         */
+          .style('fill-opacity', 1e-6);
       d3.transition(groups.exit())
           .style('stroke-opacity', 1e-6)
           .style('fill-opacity', 1e-6)
@@ -116,13 +88,6 @@ nv.models.multiBarHorizontal = function() {
           .style('fill', function(d,i){ return color[i % 10] })
           .style('stroke', function(d,i){ return color[i % 10] });
       d3.transition(groups)
-      /*
-          .attr('transform', function(d,i) {
-              return stacked ? 
-                        'translate(0,0)'
-                      : 'translate(' + (i * x.rangeBand() / data.length ) + ',0)'
-          })
-         */
           .style('stroke-opacity', 1)
           .style('fill-opacity', .75);
 
@@ -135,12 +100,9 @@ nv.models.multiBarHorizontal = function() {
 
       var barsEnter = bars.enter().append('rect')
           .attr('class', function(d,i) { return getY(d,i) < 0 ? 'bar negative' : 'bar positive'})
-          //.attr('fill', function(d,i) { return color[0]; })
           .attr('y', function(d,i,j) {
               return stacked ? 0 : (j * x.rangeBand() / data.length )
           })
-          //.attr('y', function(d,i) {  return y(Math.max(0, getY(d,i))) })
-          //.attr('height', function(d,i) { return Math.abs(y(getY(d,i)) - y(0)) })
           .attr('x', function(d) { return y0(stacked ? d.y0 : 0) })
           .attr('width', 0)
           .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
@@ -151,7 +113,6 @@ nv.models.multiBarHorizontal = function() {
               point: d,
               series: data[d.series],
               pos: [ y(getY(d,i) + (stacked ? d.y0 : 0)), x(getX(d,i)) + (x.rangeBand() * (stacked ? data.length / 2 : d.series + .5) / data.length) ],
-              //pos: [x(getX(d,i)) + (x.rangeBand() * (stacked ? data.length / 2 : d.series + .5) / data.length), y(getY(d,i) + (stacked ? d.y0 : 0))],
               pointIndex: i,
               seriesIndex: d.series,
               e: d3.event
@@ -200,11 +161,9 @@ nv.models.multiBarHorizontal = function() {
             .delay(function(d,i) { return i * 1000 / data[0].values.length })
             .attr('x', function(d,i) {
               return y(d.y0);
-              //return y(getY(d,i) + d.y0);
-              //return y(getY(d,i) + (stacked ? d.y0 : 0));
             })
             .attr('width', function(d,i) {
-              return Math.abs(y(d.y + d.y0) - y(d.y0))
+              return Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
             })
             .each('end', function() {
               d3.transition(d3.select(this))
@@ -228,8 +187,7 @@ nv.models.multiBarHorizontal = function() {
                       y(0)
                 })
                 .attr('width', function(d,i) {
-                  return Math.abs(y(d.y) - y(0))
-                  //return Math.abs(y(d.y + (stacked ? d.y0 : 0)) - y((stacked ? d.y0 : 0)))
+                  return Math.abs(y(getY(d,i)) - y(0))
                 });
             })
 
@@ -283,6 +241,18 @@ nv.models.multiBarHorizontal = function() {
     return chart;
   };
 
+  chart.xScale = function(_) {
+    if (!arguments.length) return x;
+    x = _;
+    return chart;
+  };
+
+  chart.yScale = function(_) {
+    if (!arguments.length) return y;
+    y = _;
+    return chart;
+  };
+
   chart.xDomain = function(_) {
     if (!arguments.length) return xDomain;
     xDomain = _;
@@ -307,12 +277,6 @@ nv.models.multiBarHorizontal = function() {
     return chart;
   };
 
-  chart.clipEdge = function(_) {
-    if (!arguments.length) return clipEdge;
-    clipEdge = _;
-    return chart;
-  };
-
   chart.color = function(_) {
     if (!arguments.length) return color;
     color = _;
@@ -325,6 +289,17 @@ nv.models.multiBarHorizontal = function() {
         return chart;
   };
 
+  chart.showValues = function(_) {
+    if (!arguments.length) return showValues;
+    showValues = _;
+    return chart;
+  };
+
+  chart.valuesFormat= function(_) {
+    if (!arguments.length) return valueFormat;
+    valueFormat = _;
+    return chart;
+  };
 
 
   return chart;
