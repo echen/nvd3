@@ -10,7 +10,7 @@ nv.addGraph(function() {
       .axisLabel('Voltage (v)')
       .tickFormat(d3.format('.02f'));
 
-  d3.select('#chart svg');
+  d3.select('#chart svg')
       .datum(sinAndCos())
     .transition().duration(500)
       .call(chart);
