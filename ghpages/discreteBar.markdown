@@ -6,7 +6,7 @@ title: Discrete Bar Chart
 ## Discrete Bar Chart
 
 <div id="chart">
-  <svg> </svg>
+  <svg style="height:500px"> </svg>
 </div>
 
 <script type="text/javascript" src="discreteBar.js"> </script>
