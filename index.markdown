@@ -18,6 +18,7 @@ can point out a bug or two.
 ## Charts
 
 - [Simple Line](ghpages/simpleLine.html)
+- [Discrete Bar](ghpages/discreteBar.html)
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)
@@ -28,11 +29,6 @@ can point out a bug or two.
 - [Horizontal Grouped Bar](examples/multiBarHorizontalWithLegend.html)
 - [Line and Bar Combo with two Y Axes](examples/linePlusBar.html)
 
-
-## 'Ready to Go' Charts (experimental)
-
-- [Simple Line](ghpages/lineChart.html)
-- [Discrete Bar](examples/discreteBarChart.html)
 
 
 ## Resources

@@ -1,63 +1,24 @@
-var width = function() { return $(window).width() - 40 },
-    height = 500,
-    xFormat = d3.format(',r'),
-    yFormat = d3.format('.02f'),
-    chart = nv.models.lineWithLegend(),
-    container = d3.select('#chart svg');
 
+nv.addGraph(function() {  
+  var chart = nv.models.lineChart();
 
-chart
-    .width(width())
-    .height(height);
+  chart.xAxis
+      .axisLabel('Time (ms)')
+      .tickFormat(d3.format(',r'));
 
-chart.xAxis
-    .axisLabel('Time (ms)')
-    .tickFormat(xFormat);
+  chart.yAxis
+      .axisLabel('Voltage (v)')
+      .tickFormat(d3.format('.02f'));
 
-chart.yAxis
-    .axisLabel('Voltage (v)')
-    .tickFormat(yFormat);
-
-
-container
-    .attr('width', width())
-    .attr('height', height)
-    .datum(sinAndCos());
-
-container.transition().duration(500).call(chart);
-
-
-
-function tooltipShow(e) {
-  var offset = $('#chart').offset(),
-      left = e.pos[0] + offset.left,
-      top = e.pos[1] + offset.top,
-      content;
-
-  content = '<h3>' + e.series.key + '</h3>' +
-            '<p>' + chart.yAxis.tickFormat()(chart.y()(e.point)) + 'v at ' +
-            chart.xAxis.tickFormat()(chart.x()(e.point)) + 'ms</p>';
-
-  nvtooltip.show([left, top], content);
-}
-
-
-function resizeChart() {
-  chart
-      .width(width())
-      .height(height);
-
-  container
-      .attr('width', width())
+  d3.select('#chart svg')
+      .datum(sinAndCos())
+    .transition().duration(500)
       .call(chart);
-};
 
+  nv.utils.windowResize(function() { d3.select('#chart svg').call(chart) });
 
-
-// Bind event handlers to their events
-chart.dispatch.on('tooltipShow', tooltipShow);
-chart.dispatch.on('tooltipHide', nvtooltip.cleanup);
-$(window).resize(resizeChart)
+  return chart;
+});
 
 
 
