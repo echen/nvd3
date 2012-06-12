@@ -19,6 +19,7 @@ can point out a bug or two.
 
 - [Simple Line](ghpages/simpleLine.html)
 - [Discrete Bar](ghpages/discreteBar.html)
+- [Horizontal Grouped Bar](ghpages/multiBarHorizontal.html)
 - [Zoomable Line](examples/lineWithFocus.html)
 - [Cumulative Line](examples/cumulativeLine.html)
 - [Sparkline](examples/sparkline.html)
@@ -26,7 +27,6 @@ can point out a bug or two.
 - [Scatterplot](examples/scatterWithLegend.html)
 - [Stacked/Stream/Expanded Area](examples/stackedAreaWithLegend.html)
 - [Grouped/Stacked Bar](examples/multiBarWithLegend.html)
-- [Horizontal Grouped Bar](examples/multiBarHorizontalWithLegend.html)
 - [Line and Bar Combo with two Y Axes](examples/linePlusBar.html)
 
 
