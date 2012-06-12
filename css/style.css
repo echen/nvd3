@@ -41,8 +41,8 @@ body, button, input, select, textarea { font-family: sans-serif; color: #222; }
  * These selection declarations have to be separate
  */
 
-::-moz-selection { color: #fff; text-shadow: none; }
-::selection { color: #fff; text-shadow: none; }
+::-moz-selection { text-shadow: none; }
+::selection { text-shadow: none; }
 
 
 /* =============================================================================
