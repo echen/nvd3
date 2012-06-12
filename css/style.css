@@ -39,11 +39,10 @@ body, button, input, select, textarea { font-family: sans-serif; color: #222; }
 /* 
  * Remove text-shadow in selection highlight: h5bp.com/i
  * These selection declarations have to be separate
- * Also: hot pink! (or customize the background color to match your design)
  */
 
-::-moz-selection { background: #ff7f0e; color: #fff; text-shadow: none; }
-::selection { background: #ff70fe; color: #fff; text-shadow: none; }
+::-moz-selection { color: #fff; text-shadow: none; }
+::selection { color: #fff; text-shadow: none; }
 
 
 /* =============================================================================
