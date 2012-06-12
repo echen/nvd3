@@ -5,7 +5,7 @@ title: Horizontal Multi-Bar Chart
 
 ## Horizontal Multi-Bar Chart
 
-<div id="chart">
+<div id="chart1">
   <svg style="height:500px"> </svg>
 </div>
 
