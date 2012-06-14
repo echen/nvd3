@@ -145,6 +145,21 @@
 
       nv.utils.windowResize(chart.update);
 
+
+      chart.stacked.dispatch.on('areaClick.updateExamples', function(e) {
+        setTimeout(function() {
+          exampleOne.update();
+          //exampleTwo.update();
+          exampleThree.update();
+
+          d3.select('#mainExample')
+            .transition().duration(500)
+              .call(mainExample);
+        }, 100);
+      })
+
+
+
       exampleTwo = chart;
 
       return chart;
@@ -170,6 +185,21 @@
           .transition().duration(500).call(chart);
 
       nv.utils.windowResize(chart.update);
+
+
+      chart.stacked.dispatch.on('areaClick.updateExamples', function(e) {
+        setTimeout(function() {
+          exampleOne.update();
+          exampleTwo.update();
+          //exampleThree.update();
+
+          d3.select('#mainExample')
+            .transition().duration(500)
+              .call(mainExample);
+        }, 100);
+      })
+
+
 
       exampleThree = chart;
 
