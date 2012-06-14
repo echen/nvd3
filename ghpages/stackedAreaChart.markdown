@@ -1,5 +1,5 @@
 ---
-layout: example
+layout: ex
 title: Stacked Area Chart
 ---
 
