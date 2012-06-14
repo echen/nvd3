@@ -10,7 +10,7 @@
 
   var mainExample, exampleOne, exampleTwo, exampleThree;
 
-  var colors = d3.scale.category10().range();
+  var colors = d3.scale.category20().range();
 
   var test_data = stream_layers(3,20 + Math.random()*50,.1).map(function(data, i) {
     return {
