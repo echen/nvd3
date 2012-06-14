@@ -135,80 +135,58 @@
 
   // --------------------------- EXAMPLE TWO ---------------------------------
 
-  nv.addGraph({
-    generate: function() {
-      var svg = d3.select("#exampleTwo"),
-          width = function() { return parseInt(svg.style('width')) },
-          height = function() { return parseInt(svg.style('height')) },
-          chart = nv.models.stackedAreaWithLegend()
+
+
+  nv.addGraph(function() {
+      var chart = nv.models.stackedAreaChart()
                   .margin({top: 10, bottom: 30, left: 40, right: 10})
                   .showControls(false)
                   .showLegend(false)
-                  .width(width())
-                  .height(height())
                   .style('stream');
 
-                  //.offset('wiggle')
-                  //.order('default')
-                  //
       chart.yAxis
           .tickFormat(d3.format(',.1f'));
 
-      svg
-          .attr('width', width)
-          .attr('height', height)
+      d3.select("#exampleTwo")
         .datum(test_data)
           .transition().duration(500).call(chart);
+
+      nv.utils.windowResize(chart.update);
 
       exampleTwo = chart;
 
       return chart;
-    },
-    callback: function(chart) {
-
-
-      chart.dispatch.on('tooltipShow', function(e) {
-          var offsetElement = document.getElementById("exampleTwo"),
-                  left = e.pos[0] + offsetElement.offsetLeft,
-                  top = e.pos[1] + offsetElement.offsetTop,
-                  formatterY = d3.format(",.2r"),
-            formatterX = function(d) {
-              return   d3.time.format('%x')(new Date(d))
-            };
-
-        var content = '<h3>' + e.series.key + '</h3>' +
-                      '<p>' +
-                      formatterY(chart.y()(e.point)) + ' at ' + formatterX(chart.x()(e.point)) +
-                      '</p>';
-
-        nv.tooltip.show([left, top], content);
-      });
-
-      chart.dispatch.on('tooltipHide', function(e) {
-        nv.tooltip.cleanup();
-      });
-
-
-
-      nv.utils.windowResize(function() {
-        var svg = d3.select("#exampleTwo"),
-            width = function() { return parseInt(svg.style('width')) },
-            height = function() { return parseInt(svg.style('height')) };
-
-        d3.select("#exampleTwo")
-            .attr('width', width()) //need to set SVG dimensions, chart is not aware of the SVG component
-            .attr('height', height())
-          .transition().duration(500)
-            .call(chart);
-      });
-    }
   });
-
 
 
 
   // --------------------------- EXAMPLE THREE ---------------------------------
 
+
+  nv.addGraph(function() {
+      var chart = nv.models.stackedAreaChart()
+                  .margin({top: 10, bottom: 30, left: 40, right: 10})
+                  .showControls(false)
+                  .showLegend(false)
+                  .style('stacked');
+
+      chart.yAxis
+          .tickFormat(d3.format(',.1f'));
+
+      d3.select("#exampleThree")
+        .datum(test_data)
+          .transition().duration(500).call(chart);
+
+      nv.utils.windowResize(chart.update);
+
+      exampleThree = chart;
+
+      return chart;
+  });
+
+
+
+  /*
   nv.addGraph({
     generate: function() {
       var svg = d3.select("#exampleThree"),
@@ -276,6 +254,7 @@
       });
     }
   });
+  */
 
 
 
