@@ -78,16 +78,8 @@
         setTimeout(function() {
 
           exampleOne.update();
-
-          d3.select('#exampleTwo')
-              .datum(test_data.filter(function(d) { return !d.disabled }))
-            .transition().duration(500)
-              .call(exampleTwo);
-
-          d3.select('#exampleThree')
-              .datum(test_data.filter(function(d) { return !d.disabled }))
-            .transition().duration(500)
-              .call(exampleThree);
+          exampleTwo.update();
+          exampleThree.update();
 
         }, 100);
       });
