@@ -10,88 +10,47 @@
 
   var mainExample, exampleOne, exampleTwo, exampleThree;
 
-  var colors = d3.scale.category20().range();
+  //var colors = d3.scale.category20().range();
 
   var test_data = stream_layers(3,20 + Math.random()*50,.1).map(function(data, i) {
     return {
-      key: 'Stream' + i,
-      values: data,
-      color: colors[i]
+      key: 'Stream' + i
+    , values: data
+    //, color: colors[i]
     };
   });
 
 
   // --------------------------- MAIN EXAMPLE ---------------------------------
 
-  var selector = '#mainExample';
 
-  nv.addGraph({
-    generate: function() {
-      var chart = nv.models.multiBarWithLegend(),
-          svg = d3.select(selector),
-          width = function() { return parseInt(svg.style('width')) },
-          height = function() { return parseInt(svg.style('height')) };
-          //svg = container.append('svg');
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart()
+                  .margin({top: 50, bottom: 30, left: 40, right: 10});
 
+    chart.xAxis
+        .tickFormat(d3.format(',f'));
 
-      chart
-          .margin({top: 50, bottom: 30, left: 40, right: 10})
-          .width(width)
-          .height(height);
+    chart.yAxis
+        .tickFormat(d3.format(',.1f'));
 
-      chart.xAxis
-          .tickFormat(d3.format(',f'));
+    d3.select('#mainExample')
+        .datum(test_data)
+      .transition().duration(500).call(chart);
 
-      chart.yAxis
-          .tickFormat(d3.format(',.1f'));
+    nv.utils.windowResize(chart.update);
 
-      svg
-          .datum(test_data)
-        .transition().duration(500).call(chart);
+    chart.legend.dispatch.on('legendClick.updateExamples', function() {
+      setTimeout(function() {
+        exampleOne.update();
+        exampleTwo.update();
+        exampleThree.update();
+      }, 100);
+    });
 
-      mainExample = chart;
+    mainExample = chart;
 
-      return chart;
-    },
-    callback: function(chart) {
-      var showTooltip = function(e) {
-        var offsetElement = document.getElementById(selector.substr(1)),
-            left = e.pos[0] + offsetElement.offsetLeft,
-            top = e.pos[1] + offsetElement.offsetTop,
-            formatY = chart.yAxis.tickFormat(), //Assumes using same format as axis, can customize to show higher precision, etc.
-            formatX = chart.xAxis.tickFormat();
-
-        // uses the chart's getX and getY, you may customize if x position is not the same as the value you want
-        //   ex. daily data without weekends, x is the index, while you want the date
-        var content = '<h3>' + e.series.key + '</h3>' +
-                      '<p>' +
-                      formatY(chart.y()(e.point)) + ' at ' + formatX(chart.x()(e.point)) +
-                      '</p>';
-
-        nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's');
-      };
-
-      chart.dispatch.on('tooltipShow', showTooltip);
-      chart.dispatch.on('tooltipHide', nv.tooltip.cleanup);
-
-      chart.legend.dispatch.on('legendClick.updateExamples', function() {
-        setTimeout(function() {
-
-          exampleOne.update();
-          exampleTwo.update();
-          exampleThree.update();
-
-        }, 100);
-      });
-
-      nv.utils.windowResize(function() {
-        d3.select(selector)
-            .attr('width', chart.width()()) //need to set SVG dimensions, chart is not aware of the SVG component
-            .attr('height', chart.height()())
-          .transition().duration(500)
-            .call(chart);
-      });
-    }
+    return chart;
   });
 
 
@@ -148,17 +107,12 @@
 
       chart.stacked.dispatch.on('areaClick.updateExamples', function(e) {
         setTimeout(function() {
+          mainExample.update();
           exampleOne.update();
           //exampleTwo.update();
           exampleThree.update();
-
-          d3.select('#mainExample')
-            .transition().duration(500)
-              .call(mainExample);
         }, 100);
       })
-
-
 
       exampleTwo = chart;
 
@@ -189,95 +143,17 @@
 
       chart.stacked.dispatch.on('areaClick.updateExamples', function(e) {
         setTimeout(function() {
+          mainExample.update();
           exampleOne.update();
           exampleTwo.update();
           //exampleThree.update();
-
-          d3.select('#mainExample')
-            .transition().duration(500)
-              .call(mainExample);
         }, 100);
       })
 
-
-
       exampleThree = chart;
 
       return chart;
   });
-
-
-
-  /*
-  nv.addGraph({
-    generate: function() {
-      var svg = d3.select("#exampleThree"),
-          width = function() { return parseInt(svg.style('width')) },
-          height = function() { return parseInt(svg.style('height')) },
-          chart = nv.models.stackedAreaWithLegend()
-                  .margin({top: 10, bottom: 30, left: 40, right: 10})
-                  .showControls(false)
-                  .showLegend(false)
-                  .width(width())
-                  .height(height());
-
-                  //.offset('wiggle')
-                  //.order('default')
-                  //
-      chart.yAxis
-          .tickFormat(d3.format(',.1f'));
-
-      svg
-          .attr('width', width)
-          .attr('height', height)
-        .datum(test_data)
-          .transition().duration(500).call(chart);
-
-      exampleThree = chart;
-
-      return chart;
-    },
-    callback: function(chart) {
-
-
-      chart.dispatch.on('tooltipShow', function(e) {
-          var offsetElement = document.getElementById("exampleThree"),
-                  left = e.pos[0] + offsetElement.offsetLeft,
-                  top = e.pos[1] + offsetElement.offsetTop,
-                  formatterY = d3.format(",.2r"),
-            formatterX = function(d) {
-              return   d3.time.format('%x')(new Date(d))
-            };
-
-        var content = '<h3>' + e.series.key + '</h3>' +
-                      '<p>' +
-                      formatterY(chart.y()(e.point)) + ' at ' + formatterX(chart.x()(e.point)) +
-                      '</p>';
-
-        nv.tooltip.show([left, top], content);
-      });
-
-      chart.dispatch.on('tooltipHide', function(e) {
-        nv.tooltip.cleanup();
-      });
-
-
-
-      nv.utils.windowResize(function() {
-        var svg = d3.select("#exampleThree"),
-            width = function() { return parseInt(svg.style('width')) },
-            height = function() { return parseInt(svg.style('height')) };
-
-        d3.select("#exampleThree")
-            .attr('width', width()) //need to set SVG dimensions, chart is not aware of the SVG component
-            .attr('height', height())
-          .transition().duration(500)
-            .call(chart);
-      });
-    }
-  });
-  */
-
 
 
 })();
