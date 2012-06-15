@@ -5,7 +5,7 @@ title: Stacked Area Chart
 
 ## Stacked Area Chart
 
-<div id="areaChart" style="width:100%; height:500px">
+<div id="chart" style="width:100%; height:500px">
   <svg></svg>
 </div>
 
