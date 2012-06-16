@@ -1,6 +1,7 @@
 
 nv.addGraph(function() {
-    var chart = nv.models.linePlusBarChart()
+    var testdata = exampleData(),
+        chart = nv.models.linePlusBarChart()
         .x(function(d,i) { return i })
         .color(d3.scale.category10().range());
 
