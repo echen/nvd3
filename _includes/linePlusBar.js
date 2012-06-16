@@ -18,7 +18,7 @@ nv.addGraph(function() {
     chart.bars.forceY([0]);
     //chart.lines.forceY([0]);
 
-    d3.select('#chart1 svg')
+    d3.select('#chart svg')
         .datum(exampleData())
       .transition().duration(500).call(chart);
 
