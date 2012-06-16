@@ -4,8 +4,8 @@ title: Examples
 ---
 
 <div class="alert alert-info">
-For the most up to date list of examples, please clone the 
-[github repository](https://github.com/novus/nvd3), and look at the examples there.
+For the most <strong>up to date list of examples</strong>, please <strong>clone</strong> 'the 
+<a href="https://github.com/novus/nvd3">Github Repository</a>.
 </div>
 
 <ul class="thumbnails">
