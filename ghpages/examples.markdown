@@ -5,14 +5,13 @@ title: Examples
 
 <div class="alert alert-info">
 For the most up to date list of examples, please clone the 
-<a href="https://github.com/novus/nvd3">Github Repository</a>, and look at the examples there.
+[github repository](https://github.com/novus/nvd3), and look at the examples there.
 </div>
 
 <ul class="thumbnails">
   <li class="span3">
     <a href="../ghpages/line.html" class="thumbnail">
       <img src="../img/line.png">
-      <div class="caption">
     </a>
   </li>
 
