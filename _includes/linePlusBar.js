@@ -22,6 +22,8 @@ nv.addGraph(function() {
         .datum(exampleData())
       .transition().duration(500).call(chart);
 
+    nv.utils.windowResize(chart.update);
+
     return chart;
 });
 
