@@ -3,17 +3,16 @@ layout: ex
 title: Examples
 ---
 
-## Examples
-
-Still working on getting all the examples listed here.  For the most up to 
-date and complete list of examples, please clone the 
-[github repository](https://github.com/novus/nvd3) and look in the examples 
-there.
+<div class="alert alert-info">
+For the most up to date list of examples, please clone the 
+[github repository](https://github.com/novus/nvd3) and look at the examples there.
+</div>
 
 <ul class="thumbnails">
   <li class="span3">
     <a href="../ghpages/line.html" class="thumbnail">
       <img src="../img/line.png">
+      <div class="caption">
     </a>
   </li>
 
