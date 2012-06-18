@@ -9,7 +9,7 @@ nv.addGraph(function() {
   chart.yAxis.tickFormat(d3.format('.02f'))
 
   d3.select('#chart svg')
-      .datum(randomData())
+      .datum(randomData(4,40))
     .transition().duration(500)
       .call(chart);
 
@@ -25,19 +25,24 @@ nv.addGraph(function() {
  * Simple test data generator
  */
 
-
-function randomData() {
+function randomData(groups, points) { //# groups,# points per group
   var data = [],
+      shapes = ['circle', 'cross', 'triangle-up', 'triangle-down', 'diamond', 'square'],
       random = d3.random.normal();
 
-  for (i = 0; i < 2; i++) {
+  for (i = 0; i < groups; i++) {
     data.push({
       key: 'Group ' + i,
       values: []
     });
 
-    for (j = 0; j < 100; j++) {
-      data[i].values.push({x: random(), y: random(), size: Math.random()});
+    for (j = 0; j < points; j++) {
+      data[i].values.push({
+        x: random(), 
+        y: random(), 
+        size: Math.random(), 
+        shape: shapes[i % 6]
+      });
     }
   }
 
