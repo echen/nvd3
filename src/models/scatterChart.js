@@ -8,6 +8,8 @@ nv.models.scatterChart = function() {
       showDistY = false,
       showLegend = true,
       tooltips = true,
+      tooltipX = function(key, x, y) { return '<strong>' + x + '</strong>' },
+      tooltipY = function(key, x, y) { return '<strong>' + y + '</strong>' },
       tooltip = function(key, x, y, e, graph) { 
         return '<h3>' + key + '</h3>' +
                '<p>' +  y + ' at ' + x + '</p>'
@@ -29,13 +31,21 @@ nv.models.scatterChart = function() {
 
     //TODO: FIX offsetLeft and offSet top do not work if container is shifted anywhere
     //var offsetElement = document.getElementById(selector.substr(1)),
-    var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
-        top = e.pos[1] + ( offsetElement.offsetTop || 0),
-        x = xAxis.tickFormat()(scatter.x()(e.point)),
-        y = yAxis.tickFormat()(scatter.y()(e.point)),
-        content = tooltip(e.series.key, x, y, e, chart);
+    //var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
+        //top = e.pos[1] + ( offsetElement.offsetTop || 0),
+    var leftX = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
+        topX = y.range()[0] + margin.top + ( offsetElement.offsetTop || 0),
+        leftY = x.range()[0] + margin.left + ( offsetElement.offsetLeft || 0 ),
+        topY = e.pos[1] + ( offsetElement.offsetTop || 0),
+        xVal = xAxis.tickFormat()(scatter.x()(e.point)),
+        yVal = yAxis.tickFormat()(scatter.y()(e.point)),
+        contentX = tooltipX(e.series.key, xVal, yVal, e, chart),
+        contentY = tooltipY(e.series.key, xVal, yVal, e, chart),
+        content = tooltip(e.series.key, xVal, yVal, e, chart);
 
-    nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's');
+    nv.tooltip.show([leftX, topX], contentX, 'n', 1);
+    nv.tooltip.show([leftY, topY], contentY, 'e', 1);
+    //nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's');
   };
 
 
@@ -252,13 +262,13 @@ nv.models.scatterChart = function() {
 
   chart.width = function(_) {
     if (!arguments.length) return width;
-    width = d3.functor(_);
+    width = _;
     return chart;
   };
 
   chart.height = function(_) {
     if (!arguments.length) return height;
-    height = d3.functor(_);
+    height = _;
     return chart;
   };
 
