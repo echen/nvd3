@@ -4,64 +4,82 @@ title: Examples
 ---
 
 <div class="alert alert-info">
-  For the most <strong>up to date list of examples</strong>, please <strong>clone the
-  <a href="https://github.com/novus/nvd3">Github Repository</a></strong>.
+For the most <strong>up to date list of examples</strong>, please <strong>clone the
+<a href="https://github.com/novus/nvd3">Github Repository</a></strong>.
 </div>
 
 <ul class="thumbnails">
 
   <li class="span3">
-    <a href="../ghpages/line.html" class="thumbnail">
-      <img src="../img/line.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/line.html">
+        <img src="../img/line.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/scatter.html" class="thumbnail">
-      <img src="../img/scatter.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/scatter.html">
+        <img src="../img/scatter.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/stackedArea.html" class="thumbnail">
-      <img src="../img/stackedarea.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/stackedArea.html">
+        <img src="../img/stackedarea.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/linePlusBar.html" class="thumbnail">
-      <img src="../img/lineplusbar.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/discreteBar.html">
+        <img src="../img/discretebar.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/cumulativeLine.html" class="thumbnail">
-      <img src="../img/cumulativeline.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/multiBar.html">
+        <img src="../img/stackedbar.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/lineWithFocus.html" class="thumbnail">
-      <img src="../img/linewithfocus.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/multiBarHorizontal.html">
+        <img src="../img/horizontalbar.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/discreteBar.html" class="thumbnail">
-      <img src="../img/discretebar.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/linePlusBar.html">
+        <img src="../img/lineplusbar.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/multiBar.html" class="thumbnail">
-      <img src="../img/stackedbar.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/cumulativeLine.html">
+        <img src="../img/cumulativeline.png">
+      </a>
+    </div>
   </li>
 
   <li class="span3">
-    <a href="../ghpages/multiBarHorizontal.html" class="thumbnail">
-      <img src="../img/horizontalbar.png">
-    </a>
+    <div class="thumbnail">
+      <a href="../ghpages/lineWithFocus.html">
+        <img src="../img/linewithfocus.png">
+      </a>
+    </div>
   </li>
 
 </ul>
