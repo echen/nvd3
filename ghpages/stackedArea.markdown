@@ -9,12 +9,11 @@ title: Stacked Area Chart
   <svg></svg>
 </div>
 
-<script type="text/javascript" src="../src/charts/stackedAreaChart.js"> </script>
-<script type="text/javascript" src="stackedAreaChart.js"> </script>
+<script type="text/javascript" src="stackedArea.js"> </script>
 
 
 ### Source Code
 
 {% highlight js linenos %}
-{% include stackedAreaChart.js %}
+{% include stackedArea.js %}
 {% endhighlight %}

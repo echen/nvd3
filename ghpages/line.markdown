@@ -9,11 +9,11 @@ title: Simple Line Chart
   <svg style="height:500px"> </svg>
 </div>
 
-<script type="text/javascript" src="simpleLine.js"> </script>
+<script type="text/javascript" src="line.js"> </script>
 
 
 ### Source Code
 
 {% highlight js linenos %}
-{% include simpleLine.js %}
+{% include line.js %}
 {% endhighlight %}
