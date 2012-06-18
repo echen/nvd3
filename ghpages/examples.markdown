@@ -57,5 +57,11 @@ For the most <strong>up to date list of examples</strong>, please <strong>clone 
     </a>
   </li>
 
+  <li class="span3">
+    <a href="../ghpages/lineWithFocus.html" class="thumbnail">
+      <img src="../img/linewithfocus.png">
+    </a>
+  </li>
+
 </ul>
 
