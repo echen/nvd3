@@ -9,7 +9,7 @@ title: Cumulative Line Chart
   <svg style="height:500px"> </svg>
 </div>
 
-<script type="text/javascript" src="line.js"> </script>
+<script type="text/javascript" src="cumulativeLine.js"> </script>
 
 
 ### Source Code
