@@ -3,14 +3,13 @@ layout: ex
 title: Examples
 ---
 
-<!--
 <div class="alert alert-info">
-For the most <strong>up to date list of examples</strong>, please <strong>clone the
-<a href="https://github.com/novus/nvd3">Github Repository</a></strong>.
+  For the most <strong>up to date list of examples</strong>, please <strong>clone the
+  <a href="https://github.com/novus/nvd3">Github Repository</a></strong>.
 </div>
--->
 
-<ul class="thumbnails">
+<div class="span9">
+  <ul class="thumbnails">
 
     <li class="span3">
       <a href="../ghpages/line.html" class="thumbnail">
@@ -66,5 +65,5 @@ For the most <strong>up to date list of examples</strong>, please <strong>clone 
       </a>
     </li>
 
-</ul>
-
+  </ul>
+</div>
