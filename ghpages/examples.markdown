@@ -11,75 +11,57 @@ For the most <strong>up to date list of examples</strong>, please <strong>clone 
 <ul class="thumbnails">
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/line.html">
-        <img src="../img/line.png">
-      </a>
-    </div>
+    <a href="../ghpages/line.html" class="thumbnail">
+      <img src="../img/line.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/scatter.html">
-        <img src="../img/scatter.png">
-      </a>
-    </div>
+    <a href="../ghpages/scatter.html" class="thumbnail">
+      <img src="../img/scatter.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/stackedArea.html">
-        <img src="../img/stackedarea.png">
-      </a>
-    </div>
+    <a href="../ghpages/stackedArea.html" class="thumbnail">
+      <img src="../img/stackedarea.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/discreteBar.html">
-        <img src="../img/discretebar.png">
-      </a>
-    </div>
+    <a href="../ghpages/discreteBar.html" class="thumbnail">
+      <img src="../img/discretebar.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/multiBar.html">
-        <img src="../img/stackedbar.png">
-      </a>
-    </div>
+    <a href="../ghpages/multiBar.html" class="thumbnail">
+      <img src="../img/stackedbar.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/multiBarHorizontal.html">
-        <img src="../img/horizontalbar.png">
-      </a>
-    </div>
+    <a href="../ghpages/multiBarHorizontal.html" class="thumbnail">
+      <img src="../img/horizontalbar.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/linePlusBar.html">
-        <img src="../img/lineplusbar.png">
-      </a>
-    </div>
+    <a href="../ghpages/linePlusBar.html" class="thumbnail">
+      <img src="../img/lineplusbar.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/cumulativeLine.html">
-        <img src="../img/cumulativeline.png">
-      </a>
-    </div>
+    <a href="../ghpages/cumulativeLine.html" class="thumbnail">
+      <img src="../img/cumulativeline.png">
+    </a>
   </li>
 
   <li class="span3">
-    <div class="thumbnail">
-      <a href="../ghpages/lineWithFocus.html">
-        <img src="../img/linewithfocus.png">
-      </a>
-    </div>
+    <a href="../ghpages/lineWithFocus.html" class="thumbnail">
+      <img src="../img/linewithfocus.png">
+    </a>
   </li>
 
 </ul>
