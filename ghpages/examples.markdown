@@ -51,5 +51,11 @@ For the most <strong>up to date list of examples</strong>, please <strong>clone 
     </a>
   </li>
 
+  <li class="span3">
+    <a href="../ghpages/cumulativeLine.html" class="thumbnail">
+      <img src="../img/cumulativeline.png">
+    </a>
+  </li>
+
 </ul>
 
