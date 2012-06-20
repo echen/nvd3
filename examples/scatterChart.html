@@ -22,11 +22,14 @@ div {
 
 
 #offsetDiv {
+  margin-left: 100px;
+  margin-top: 100px;
 }
 
 
 #test1 {
   margin: 0;
+  height: 500px;
 }
 
 
@@ -41,6 +44,7 @@ div {
 </div>
 
 <script src="../lib/d3.v2.js"></script>
+<script src="../lib/fisheye.js"></script>
 <script src="../nv.d3.js"></script>
 <script src="../src/tooltip.js"></script>
 <script src="../src/models/legend.js"></script>
@@ -56,6 +60,7 @@ nv.addGraph(function() {
   var chart = nv.models.scatterChart()
                 .showDistX(true)
                 .showDistY(true)
+                //.height(500)
                 .color(d3.scale.category10().range());
 
   chart.xAxis.tickFormat(d3.format('.02f'))
