@@ -6,10 +6,10 @@ title: Stacked Area Chart
 ## Stacked Area Chart
 
 <div id="chart" style="width:100%">
-  <svg></svg>
+  <svg style="height:500px"></svg>
 </div>
 
-<script type="text/javascript" src="stackedArea.js" style="height:500px"> </script>
+<script type="text/javascript" src="stackedArea.js"> </script>
 
 
 ### Source Code
