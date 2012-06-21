@@ -3,7 +3,8 @@
 
 nv.addGraph(function() {
   var chart = nv.models.indentedTree()
-                .options(testOptions());
+                .options(testOptions())
+                .tableClass('table'); //for bootstrap styling
 
   d3.select('#chart')
       .datum(testData())
