@@ -4,7 +4,7 @@
 nv.addGraph(function() {
   var chart = nv.models.indentedTree()
                 .options(testOptions())
-                .tableClass('table'); //for bootstrap styling
+                .tableClass('table table-striped'); //for bootstrap styling
 
   d3.select('#chart')
       .datum(testData())
