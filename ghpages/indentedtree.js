@@ -98,7 +98,7 @@ function testOptions() {
         key: 'key',
         label: 'Name',
         showCount: true,
-        width: 50,
+        width: '75%',
         type: 'text',
         classes: function(d) { return d.url ? 'clickable name' : 'name' },
         click: function(d) {
@@ -108,7 +108,7 @@ function testOptions() {
       {
         key: 'type',
         label: 'Type',
-        width: 5,
+        width: '25%',
         type: 'text'
       }
     ],
