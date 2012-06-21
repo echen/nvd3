@@ -1,9 +1,7 @@
 
-//***** THIS API WILL BE CHANGED DRASTICALLY IN THE NEXT DAY OR TWO *****
-
 nv.addGraph(function() {
   var chart = nv.models.indentedTree()
-                .options(testOptions())
+                .columns(testColumns())
                 .tableClass('table table-striped'); //for bootstrap styling
 
   d3.select('#chart')
@@ -89,11 +87,9 @@ function testData() {
   }];
 }
 
-// THIS OPTIONS FORMAT WILL BE CHANGED DRASTICALLY!, will likely be chained options on the chart, like everything else
 
-function testOptions() {
-  return {
-    columns: [
+function testColumns() {
+  return [
       {
         key: 'key',
         label: 'Name',
@@ -111,9 +107,6 @@ function testOptions() {
         width: '25%',
         type: 'text'
       }
-    ],
-    header: true,
-    noResults: "Nothing portfolios found."
-  };
+    ];
 }
 
