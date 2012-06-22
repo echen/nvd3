@@ -1,53 +1,60 @@
 
-nv.models.sparkline = function() {
+nv.models.distribution = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
-      length = 400,
+      width = 400, //technically width or height depending on x or y....
       size = 8,
-      getData = function(d) { return d },
       axis = 'x', // 'x' or 'y'... horizontal or vertical
+      getData = function(d) { return d[axis] },  // defaults d.x or d.y
       color = d3.scale.category20().range(),
       domain;
 
   var scale = d3.scale.linear(),
+      scale0;
 
   function chart(selection) {
     selection.each(function(data) {
-      var availableLength = length - (axis === 'x' ? margin.left + margin.right : margin.top + margin.bottom),
+      var availableLength = width - (axis === 'x' ? margin.left + margin.right : margin.top + margin.bottom),
           naxis = axis == 'x' ? 'y' : 'x';
+
+          console.log(data);
 
       //store old scales if they exist
       scale0 = scale0 || scale;
 
       scale
-          .domain(domain || d3.extent(data, getData ))
+          .domain(domain || d3.extent(data, getData))
           .range([0, availableLength]);
 
-
+          console.log(scale.domain());
 
       var wrap = d3.select(this).selectAll('g.distribution').data([data]);
+      var wrapEnter = wrap.enter().append('g').attr('class', 'nvd3 distribution');
+      var gEnter = wrapEnter.append('g');
+      var g = wrap.select('g');
 
-      var gEnter = wrap.enter().append('g').attr('class', 'nvd3 distribution');
-      gEnter
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+      wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 
+      var distWrap = g.selectAll('g.dist')
+          .data(function(d) {console.log('tets', d);  return d }, function(d) { return d.key });
 
-      //.style('stroke', function(d,i) { return d.color || color[i * color.length] });
-
+      distWrap.enter().append('g')
+          .attr('class', function(d,i) { return 'dist series-' + i });
+      distWrap
+        .style('stroke', function(d,i) { return color.filter(function(d,i) { return data[i] && !data[i].disabled })[i % color.length] });
 
       var dist = distWrap.selectAll('line.dist' + axis)
-            .data(function(d) { return d.values })
+          .data(function(d) { return d.values })
       dist.enter().append('line')
           .attr(axis + '1', function(d,i) { return scale0(getData(d,i)) })
           .attr(axis + '2', function(d,i) { return scale0(getData(d,i)) })
-      //d3.transition(distX.exit())
       d3.transition(distWrap.exit().selectAll('line.dist' + axis))
           .attr(axis + '1', function(d,i) { return scale(getData(d,i)) })
           .attr(axis + '2', function(d,i) { return scale(getData(d,i)) })
           .remove();
       dist
           .attr('class', function(d,i) { return 'dist' + axis + ' dist-' + i })
-          .attr(naxis + '1', y.range()[0])
-          .attr(naxis + '2', y.range()[0] + size);
+          .attr(naxis + '1', 0)
+          .attr(naxis + '2', size);
       d3.transition(dist)
           .attr(axis + '1', function(d,i) { return scale(getData(d,i)) })
           .attr(axis + '2', function(d,i) { return scale(getData(d,i)) })
@@ -73,9 +80,15 @@ nv.models.sparkline = function() {
     return chart;
   };
 
-  chart.height = function(_) {
-    if (!arguments.length) return height;
-    height = _;
+  chart.axis = function(_) {
+    if (!arguments.length) return axis;
+    axis = _;
+    return chart;
+  };
+
+  chart.size = function(_) {
+    if (!arguments.length) return size;
+    size = _;
     return chart;
   };
 
