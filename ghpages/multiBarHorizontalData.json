@@ -1,7 +1,7 @@
 [ 
   {
-    "key": 'Short',
-    "color": '#d62728',
+    "key": "Short",
+    "color": "#d62728",
     "values": [
       { 
         "label" : "Information Technology" ,
@@ -42,8 +42,8 @@
     ]
   },
   {
-    "key": 'Long',
-    "color": '#1f77b4',
+    "key": "Long",
+    "color": "#1f77b4",
     "values": [
       { 
         "label" : "Information Technology" ,
