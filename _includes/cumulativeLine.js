@@ -12,7 +12,7 @@ d3.json('cumulativeLineData.json', function(data) {
           });
 
     chart.yAxis
-        .tickFormat(d3.format(',.02p'));
+        .tickFormat(d3.format(',.1%'));
 
     d3.select('#chart svg')
         .datum(data)
