@@ -15,7 +15,7 @@ d3.json('cumulativeLineData.json', function(data) {
         .tickFormat(d3.format(',.02p'));
 
     d3.select('#chart svg')
-        .datum(cumulativeTestData())
+        .datum(data)
       .transition().duration(500)
         .call(chart);
 
