@@ -1,7 +1,7 @@
 
 nv.addGraph(function() {
   var chart = nv.models.pieChart()
-      .showLabels(false);
+      .showLabels(true);
 
     d3.select("#chart svg")
         .datum(exampleData())
