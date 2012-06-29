@@ -1,6 +1,7 @@
 
 nv.addGraph(function() {
   var chart = nv.models.pieChart()
+      .labelThreshold(.01)
       .showLabels(true);
 
     d3.select("#chart svg")
@@ -49,8 +50,12 @@ function exampleData() {
       y: 4
     },
     {
-        key: "Six",
-        y: 3
+      key: "Six",
+      y: 1
+    },
+    {
+      key: "Seven",
+      y: .5
     }
   ];
 }
