@@ -11,6 +11,19 @@ nv.addGraph(function() {
   return chart;
 });
 
+nv.addGraph(function() {
+  var chart = nv.models.pieChart()
+      .showLabels(true)
+      .donut(true);
+
+    d3.select("#chart2 svg")
+        .datum(exampleData())
+      .transition().duration(1200)
+        .call(chart);
+
+  return chart;
+});
+
 
 
 function exampleData() {

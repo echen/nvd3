@@ -9,6 +9,10 @@ title: Pie Chart
   <svg style="height:500px;width:500px"> </svg>
 </div>
 
+<div id="chart2">
+  <svg style="height:500px;width:500px"> </svg>
+</div>
+
 <script type="text/javascript" src="pie.js"> </script>
 
 
