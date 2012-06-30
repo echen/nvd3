@@ -14,7 +14,7 @@ nv.addGraph(function() {
 
 
 
-function exampledata() {
+function exampleData() {
   return [
     {"title":"Revenue","subtitle":"US$, in thousands","ranges":[150,225,300],"measures":[220],"markers":[250]}
   ];
