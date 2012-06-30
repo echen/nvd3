@@ -1,8 +1,6 @@
 
 nv.addGraph(function() {  
-  var chart = nv.models.bulletChart()
-                .width(800)
-                .height(55);
+  var chart = nv.models.bulletChart();
 
   d3.select('#chart svg')
       .datum(exampleData())
