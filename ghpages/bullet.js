@@ -5,7 +5,7 @@ nv.addGraph(function() {
                 .height(80);
 
   d3.select('#chart svg')
-      .datum([exampleData()])
+      .datum(exampleData())
     .transition().duration(1000)
       .call(chart);
 
@@ -15,7 +15,5 @@ nv.addGraph(function() {
 
 
 function exampleData() {
-  return [
-    {"title":"Revenue","subtitle":"US$, in thousands","ranges":[150,225,300],"measures":[220],"markers":[250]}
-  ];
+  return {"title":"Revenue","subtitle":"US$, in thousands","ranges":[150,225,300],"measures":[220],"markers":[250]};
 }
