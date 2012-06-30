@@ -5,7 +5,7 @@ nv.addGraph(function() {
                 .height(80);
 
   d3.select('#chart svg')
-      .datum(exampleData())
+      .datum([exampleData()])
     .transition().duration(1000)
       .call(chart);
 
