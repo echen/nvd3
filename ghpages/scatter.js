@@ -38,10 +38,10 @@ function randomData(groups, points) { //# groups,# points per group
 
     for (j = 0; j < points; j++) {
       data[i].values.push({
-        x: random(), 
-        y: random(), 
-        size: Math.random(), 
-        shape: shapes[j % 6]
+        x: random()
+      , y: random()
+      , size: Math.random()
+      //, shape: shapes[j % 6]
       });
     }
   }
