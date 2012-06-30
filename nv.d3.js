@@ -145,9 +145,10 @@ d3.time.monthEnds = d3_time_range(d3.time.monthEnd, function(date) {
     var body = document.getElementsByTagName("body")[0];
 
     container.innerHTML = content;
-    container.style.left = 1;
-    container.style.top = 1;
+    container.style.left = 0;
+    container.style.top = 0;
     container.style.opacity = 0;
+
     body.appendChild(container);
 
     var height = parseInt(container.offsetHeight),
@@ -194,6 +195,8 @@ d3.time.monthEnds = d3_time_range(d3.time.monthEnd, function(date) {
     container.style.left = left+"px";
     container.style.top = top+"px";
     container.style.opacity = 1;
+    container.style.position = "absolute"; //fix scroll bar issue
+    container.style.pointerEvents = "none"; //fix scroll bar issue
 
     return container;
   };
@@ -374,7 +377,8 @@ nv.models.axis = function() {
                 })
               .select('text')
                 .attr('dy', '.32em')
-                .attr('dx', axis.tickPadding())
+                .attr('y', 0)
+                .attr('x', axis.tickPadding())
                 .attr('text-anchor', 'start')
                 .text(function(d,i) {
                   return axis.tickFormat()(d)
@@ -405,7 +409,8 @@ nv.models.axis = function() {
                 })
               .select('text')
                 .attr('dy', '.32em')
-                .attr('dx', -axis.tickPadding())
+                .attr('y', 0)
+                .attr('x', -axis.tickPadding())
                 .attr('text-anchor', 'end')
                 .text(function(d,i) {
                   return axis.tickFormat()(d)
@@ -427,7 +432,7 @@ nv.models.axis = function() {
       if (showMaxMin && (axis.orient() === 'left' || axis.orient() === 'right')) {
         g.selectAll('g') // the g's wrapping each tick
             .filter(function(d,i) {
-              return d && (scale(d) < 8 || scale(d) > scale.range()[0] - 8); // 8 is assuming text height is 16... if d is 0, leave it!
+              return d && (scale(d) < 10 || scale(d) > scale.range()[0] - 10); // 10 is assuming text height is 16... if d is 0, leave it!
             })
             .remove();
       }
@@ -1733,31 +1738,6 @@ nv.models.discreteBarChart = function() {
           .attr('width', x.rangeBand() * (staggerLabels ? 2 : 1))
           .attr('height', 16)
           .attr('x', -x.rangeBand() / (staggerLabels ? 1 : 2 ));
-
-      /*
-      var evenLabelClips = defsEnter.append('clipPath')
-          .attr('id', 'x-label-clip-even-' + discretebar.id())
-        .selectAll('rect')
-          .data(function(d) { return d[0].values.filter(function(d,i) { return i % 2 === 0 }) });
-
-      evenLabelClips.enter().append('rect')
-            .attr('width', x.rangeBand())
-            .attr('height', 32)
-            .attr('y', y.range()[0])
-            .attr('x', function(d,i) { return x(discretebar.x()(d,i)) });
-
-      var oddLabelClips = defsEnter.append('clipPath')
-          .attr('id', 'x-label-clip-odd-' + discretebar.id())
-        .selectAll('rect')
-          .data(function(d) { return d[0].values.filter(function(d,i) { return i % 2 === 1 }) });
-
-      oddLabelClips.enter().append('rect')
-            .attr('width', x.rangeBand())
-            .attr('height', 16)
-            .attr('y', y.range()[0] + 16 + (staggerLabels ? 12: 0))
-            .attr('x', function(d,i) { return x(discretebar.x()(d,i)) });
-            */
-
 
 
       xAxis
@@ -4733,30 +4713,28 @@ nv.models.multiBarHorizontalChart = function() {
 }
 
 nv.models.pie = function() {
-  var margin = {top: 20, right: 20, bottom: 20, left: 20},
+  var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 500,
       height = 500,
-      animate = 2000,
-      radius = Math.min(width-(margin.right+margin.left), height-(margin.top+margin.bottom)) / 2,
-      label ='label',
-      field ='y',
+      getLabel = function(d) { return d.key },
+      getY = function(d) { return d.y },
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID in case user doesn't select one
-      color = d3.scale.category20(),
+      color = d3.scale.category20().range(),
+      valueFormat = d3.format(',.2f'),
       showLabels = true,
-      donut = false,
-      title = '';
+      labelThreshold = .02, //if slice percentage is under this, don't show label
+      donut = false;
 
-      var lastWidth = 0,
-      lastHeight = 0;
-
-
-  var  dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'tooltipShow', 'tooltipHide');
+  var  dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout');
 
   function chart(selection) {
     selection.each(function(data) {
+      var availableWidth = width - margin.left - margin.right,
+          availableHeight = height - margin.top - margin.bottom,
+          radius = Math.min(availableWidth, availableHeight) / 2;
 
-      var svg = d3.select(this)
-          .on("click", function(d,i) {
+      var container = d3.select(this)
+          .on('click', function(d,i) {
               dispatch.chartClick({
                   data: d,
                   index: i,
@@ -4766,157 +4744,150 @@ nv.models.pie = function() {
           });
 
 
+      var wrap = container.selectAll('.wrap.pie').data([data]);
+      var wrapEnter = wrap.enter().append('g').attr('class','wrap nvd3 pie chart-' + id);
+      var gEnter = wrapEnter.append('g');
+      var g = wrap.select('g')
 
-        var background = svg.selectAll('svg.margin').data([data]);
-        var parent = background.enter();
-        parent.append("text")
-            .attr("class", "title")
-            .attr("dy", ".91em")
-            .attr("text-anchor", "start")
-            .text(title);
-        parent.append('svg')
-            .attr('class','margin')
-            .attr('x', margin.left)
-            .attr('y', margin.top)
-            .style('overflow','visible');
+      gEnter.append('g').attr('class', 'pie');
 
-        var wrap = background.selectAll('g.wrap').data([data]);
-        wrap.exit().remove();
-        var wEnter = wrap.enter();
+      wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-        wEnter
-          .append('g')
-            .attr('class', 'wrap')
-            .attr('id','wrap-'+id)
-          .append('g')
-            .attr('class', 'pie');
+      g.select('.pie').attr('transform', 'translate(' + availableWidth / 2 + ',' + availableHeight / 2 + ')');
 
 
 
-        wrap
-            .attr('width', width) //-(margin.left+margin.right))
-            .attr('height', height) //-(margin.top+margin.bottom))
-            .attr("transform", "translate(" + radius + "," + radius + ")");
+      var arc = d3.svg.arc()
+                  .outerRadius((radius-(radius / 5)));
 
-
-
-
-        var arc = d3.svg.arc()
-          .outerRadius((radius-(radius / 5)));
-
-        if (donut) arc.innerRadius(radius / 2);
+      if (donut) arc.innerRadius(radius / 2);
 
 
       // Setup the Pie chart and choose the data element
       var pie = d3.layout.pie()
-         .value(function (d) { return d[field]; });
+          .sort(null)
+          .value(function(d) { return d.disabled ? 0 : getY(d) });
 
-      var slices = background.select('.pie').selectAll(".slice")
-            .data(pie);
+      var slices = wrap.select('.pie').selectAll('.slice')
+          .data(pie);
 
-          slices.exit().remove();
+      slices.exit().remove();
 
-        var ae = slices.enter().append("svg:g")
-              .attr("class", "slice")
+      var ae = slices.enter().append('svg:g')
+              .attr('class', 'slice')
               .on('mouseover', function(d,i){
-                        d3.select(this).classed('hover', true);
-                        dispatch.tooltipShow({
-                            label: d.data[label],
-                            value: d.data[field],
-                            data: d.data,
-                            index: i,
-                            pos: [d3.event.pageX, d3.event.pageY],
-                            id: id
-                        });
-
+                d3.select(this).classed('hover', true);
+                dispatch.elementMouseover({
+                    label: getLabel(d.data),
+                    value: getY(d.data),
+                    point: d.data,
+                    pointIndex: i,
+                    pos: [d3.event.pageX, d3.event.pageY],
+                    id: id
+                });
               })
               .on('mouseout', function(d,i){
-                        d3.select(this).classed('hover', false);
-                        dispatch.tooltipHide({
-                            label: d.data[label],
-                            value: d.data[field],
-                            data: d.data,
-                            index: i,
-                            id: id
-                        });
+                d3.select(this).classed('hover', false);
+                dispatch.elementMouseout({
+                    label: getLabel(d.data),
+                    value: getY(d.data),
+                    point: d.data,
+                    index: i,
+                    id: id
+                });
               })
               .on('click', function(d,i) {
-                    dispatch.elementClick({
-                        label: d.data[label],
-                        value: d.data[field],
-                        data: d.data,
-                        index: i,
-                        pos: d3.event,
-                        id: id
-                    });
-                    d3.event.stopPropagation();
-              })
-              .on('dblclick', function(d,i) {
-                dispatch.elementDblClick({
-                    label: d.data[label],
-                    value: d.data[field],
-                    data: d.data,
+                dispatch.elementClick({
+                    label: getLabel(d.data),
+                    value: getY(d.data),
+                    point: d.data,
                     index: i,
                     pos: d3.event,
                     id: id
                 });
-                 d3.event.stopPropagation();
+                d3.event.stopPropagation();
+              })
+              .on('dblclick', function(d,i) {
+                dispatch.elementDblClick({
+                    label: getLabel(d.data),
+                    value: getY(d.data),
+                    point: d.data,
+                    index: i,
+                    pos: d3.event,
+                    id: id
+                });
+                d3.event.stopPropagation();
               });
 
-        var paths = ae.append("svg:path")
-            .attr('class','path')
-            .attr("fill", function(d, i) { return color(i); });
+        slices
+            .attr('fill', function(d,i) { return color[i]; });
+
+        var paths = ae.append('svg:path')
+            .each(function(d) { this._current = d; });
             //.attr('d', arc);
 
-        slices.select('.path')
+        d3.transition(slices.select('path'))
             .attr('d', arc)
-            .transition()
-            .ease("bounce")
-            .duration(animate)
-            .attrTween("d", tweenPie);
+            //.ease('bounce')
+            .attrTween('d', arcTween);
+            //.attrTween('d', tweenPie);
 
         if (showLabels) {
-            // This does the normal label
-            ae.append("text");
+          // This does the normal label
+          ae.append('text')
+            .attr('transform', function(d) {
+               d.outerRadius = radius + 10; // Set Outer Coordinate
+               d.innerRadius = radius + 15; // Set Inner Coordinate
+               return 'translate(' + arc.centroid(d) + ')';
+            })
+            .style('text-anchor', 'middle') //center the text on it's origin
+            .style('fill', '#000');
 
-            slices.select("text")
-              .transition()
-              .duration(animate)
-              .ease('bounce')
-              .attr("transform", function(d) {
+          d3.transition(slices.select('text'))
+              //.ease('bounce')
+              .attr('transform', function(d) {
                  d.outerRadius = radius + 10; // Set Outer Coordinate
                  d.innerRadius = radius + 15; // Set Inner Coordinate
-                 return "translate(" + arc.centroid(d) + ")";
+                 return 'translate(' + arc.centroid(d) + ')';
               })
-              .attr("text-anchor", "middle") //center the text on it's origin
-              .style("font", "bold 12px Arial")
-              .text(function(d, i) {  return d.data[label]; });
+              //.style('font', 'bold 12px Arial') // font style's should be set in css!
+              .text(function(d, i) { 
+                var percent = (d.endAngle - d.startAngle) / (2 * Math.PI);
+                return (d.value && percent > labelThreshold) ? getLabel(d.data) : ''; 
+              });
         }
 
 
         // Computes the angle of an arc, converting from radians to degrees.
         function angle(d) {
-            var a = (d.startAngle + d.endAngle) * 90 / Math.PI - 90;
-            return a > 90 ? a - 180 : a;
+          var a = (d.startAngle + d.endAngle) * 90 / Math.PI - 90;
+          return a > 90 ? a - 180 : a;
         }
 
-
-
-
+        function arcTween(a) {
+          if (!donut) a.innerRadius = 0;
+          var i = d3.interpolate(this._current, a);
+          this._current = i(0);
+          return function(t) {
+            return arc(i(t));
+          };
+        }
 
         function tweenPie(b) {
-            b.innerRadius = 0;
-            var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-            return function(t) {
-                return arc(i(t));
-            };
+          b.innerRadius = 0;
+          var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+          return function(t) {
+              return arc(i(t));
+          };
         }
-
 
     });
 
     return chart;
   }
+
+
+  chart.dispatch = dispatch;
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
@@ -4926,73 +4897,237 @@ nv.models.pie = function() {
 
   chart.width = function(_) {
     if (!arguments.length) return width;
-    if (margin.left + margin.right + 20 > _) {
-      width = margin.left + margin.right + 20; // Min width
-    } else {
-      width = _;
-    }
-    radius = Math.min(width-(margin.left+margin.right), height-(margin.top+margin.bottom)) / 2;
+    width = _;
     return chart;
   };
 
   chart.height = function(_) {
     if (!arguments.length) return height;
-    if (margin.top + margin.bottom + 20 > _) {
-      height = margin.top + margin.bottom + 20; // Min height
-    } else {
-      height = _;
-    }
-    radius = Math.min(width-(margin.left+margin.right), height-(margin.top+margin.bottom)) / 2;
+    height = _;
     return chart;
   };
 
-  chart.animate = function(_) {
-    if (!arguments.length) return animate;
-    animate = _;
+  chart.y = function(_) {
+    if (!arguments.length) return getY;
+    getY = d3.functor(_);
     return chart;
   };
 
-  chart.labelField = function(_) {
-    if (!arguments.length) return (label);
-      label = _;
-      return chart;
-  };
-
-  chart.dataField = function(_) {
-    if (!arguments.length) return (field);
-    field = _;
+  chart.label = function(_) {
+    if (!arguments.length) return getLabel;
+    getLabel = _;
     return chart;
   };
 
   chart.showLabels = function(_) {
-      if (!arguments.length) return (showLabels);
-      showLabels = _;
-      return chart;
+    if (!arguments.length) return showLabels;
+    showLabels = _;
+    return chart;
   };
 
   chart.donut = function(_) {
-        if (!arguments.length) return (donut);
-        donut = _;
-        return chart;
-  };
-
-  chart.title = function(_) {
-        if (!arguments.length) return (title);
-        title = _;
-        return chart;
+    if (!arguments.length) return donut;
+    donut = _;
+    return chart;
   };
 
   chart.id = function(_) {
-        if (!arguments.length) return id;
-        id = _;
-        return chart;
+    if (!arguments.length) return id;
+    id = _;
+    return chart;
   };
 
-  chart.dispatch = dispatch;
+  chart.color = function(_) {
+    if (!arguments.length) return color;
+    color = _;
+    return chart;
+  };
+
+  chart.valueFormat = function(_) {
+    if (!arguments.length) return valueFormat;
+    valueFormat = _;
+    return chart;
+  };
+
+  chart.labelThreshold = function(_) {
+    if (!arguments.length) return labelThreshold;
+    labelThreshold = _;
+    return chart;
+  };
 
 
+  return chart;
+}
+
+nv.models.pieChart = function() {
+  var margin = {top: 30, right: 20, bottom: 20, left: 20},
+      width = null,
+      height = null,
+      showLegend = true,
+      color = d3.scale.category20().range(),
+      tooltips = true,
+      tooltip = function(key, y, e, graph) { 
+        return '<h3>' + key + '</h3>' +
+               '<p>' +  y + '</p>'
+      };
+
+
+  var pie = nv.models.pie(),
+      legend = nv.models.legend().height(30),
+      dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
+
+
+  var showTooltip = function(e, offsetElement) {
+    var left = e.pos[0] + ( (offsetElement && offsetElement.offsetLeft) || 0 ),
+        top = e.pos[1] + ( (offsetElement && offsetElement.offsetTop) || 0),
+        y = pie.valueFormat()(pie.y()(e.point)),
+        content = tooltip(pie.label()(e.point), y, e, chart);
+
+    nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's');
+  };
+
+
+
+  function chart(selection) {
+    selection.each(function(data) {
+      var container = d3.select(this),
+          that = this;
+
+      var availableWidth = (width  || parseInt(container.style('width')) || 960)
+                             - margin.left - margin.right,
+          availableHeight = (height || parseInt(container.style('height')) || 400)
+                             - margin.top - margin.bottom;
+
+
+
+      var wrap = container.selectAll('g.wrap.pieChart').data([data]);
+      var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 pieChart').append('g');
+
+      gEnter.append('g').attr('class', 'pieWrap');
+      gEnter.append('g').attr('class', 'legendWrap');
+
+      var g = wrap.select('g');
+
+
+      if (showLegend) {
+        legend.width( availableWidth );
+
+        wrap.select('.legendWrap')
+            .datum(data)
+            .call(legend);
+
+        if ( margin.top != legend.height()) {
+          margin.top = legend.height();
+          availableHeight = (height || parseInt(container.style('height')) || 400)
+                             - margin.top - margin.bottom;
+        }
+
+        wrap.select('.legendWrap')
+            .attr('transform', 'translate(0,' + (-margin.top) +')');
+      }
+
+
+      pie
+        .width(availableWidth)
+        .height(availableHeight)
+        //.color(data.map(function(d,i) {
+          //return d.color || color[i % color.length];
+        //}).filter(function(d,i) { return !data[i].disabled }))
+
+
+
+      g.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+      var pieWrap = g.select('.pieWrap')
+          .datum(data)
+          //.datum(data.filter(function(d) { return !d.disabled }))
+
+
+      d3.transition(pieWrap).call(pie);
+
+
+      legend.dispatch.on('legendClick', function(d,i, that) {
+        d.disabled = !d.disabled;
+
+        if (!data.filter(function(d) { return !d.disabled }).length) {
+          data.map(function(d) {
+            d.disabled = false;
+            wrap.selectAll('.series').classed('disabled', false);
+            return d;
+          });
+        }
+
+        selection.transition().call(chart)
+      });
+
+      pie.dispatch.on('elementMouseover.tooltip', function(e) {
+        e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
+        dispatch.tooltipShow(e);
+      });
+      if (tooltips) dispatch.on('tooltipShow', function(e) { showTooltip(e) } ); // TODO: maybe merge with above?
+
+      pie.dispatch.on('elementMouseout.tooltip', function(e) {
+        dispatch.tooltipHide(e);
+      });
+      if (tooltips) dispatch.on('tooltipHide', nv.tooltip.cleanup);
+
+
+      //TODO: decide if this makes sense to add into all the models for ease of updating (updating without needing the selection)
+      chart.update = function() { selection.transition().call(chart); };
+      chart.container = this; // I need a reference to the container in order to have outside code check if the chart is visible or not
+
+    });
 
     return chart;
+  }
+
+
+  chart.dispatch = dispatch;
+  chart.pie = pie; // really just makign the accessible for discretebar.dispatch, may rethink slightly
+
+  d3.rebind(chart, pie, 'y', 'label', 'id', 'showLabels', 'donut', 'labelThreshold');
+
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
+    return chart;
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  };
+
+  chart.color = function(_) {
+    if (!arguments.length) return color;
+    color = _;
+    legend.color(_);
+    pie.color(_);
+    return chart;
+  };
+
+  chart.tooltips = function(_) {
+    if (!arguments.length) return tooltips;
+    tooltips = _;
+    return chart;
+  };
+
+  chart.tooltipContent = function(_) {
+    if (!arguments.length) return tooltip;
+    tooltip = _;
+    return chart;
+  };
+
+
+  return chart;
 }
 
 nv.models.scatter = function() {

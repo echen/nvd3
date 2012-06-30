@@ -4,7 +4,7 @@ d3.json('multiBarHorizontalData.json', function(data) {
     var chart = nv.models.multiBarHorizontalChart()
         .x(function(d) { return d.label })
         .y(function(d) { return d.value })
-        .margin({top: 30, right: 20, bottom: 50, left: 160})
+        .margin({top: 30, right: 20, bottom: 50, left: 175})
         .showValues(true)
         .tooltips(false)
         .showControls(false);
