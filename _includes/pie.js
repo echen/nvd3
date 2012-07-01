@@ -3,7 +3,6 @@ nv.addGraph(function() {
   var chart = nv.models.pieChart()
       .x(function(d) { return d.label })
       .y(function(d) { return d.value })
-      .labelThreshold(.01)
       .showLabels(true);
 
     d3.select("#chart svg")
@@ -19,6 +18,7 @@ nv.addGraph(function() {
       .x(function(d) { return d.label })
       .y(function(d) { return d.value })
       .showLabels(true)
+      .labelThreshold(.05)
       .donut(true);
 
     d3.select("#chart2 svg")
