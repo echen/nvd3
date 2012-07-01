@@ -1,6 +1,8 @@
 
 nv.addGraph(function() {
   var chart = nv.models.pieChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
       .labelThreshold(.01)
       .showLabels(true);
 
@@ -14,6 +16,8 @@ nv.addGraph(function() {
 
 nv.addGraph(function() {
   var chart = nv.models.pieChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
       .showLabels(true)
       .donut(true);
 
@@ -29,34 +33,43 @@ nv.addGraph(function() {
 
 function exampleData() {
   return [
-    { 
-      key: "One",
-      y: 5
-    },
-    { 
-      key: "Two",
-      y: 2
-    },
-    { 
-      key: "Three",
-      y: 9
-    },
-    { 
-      key: "Four",
-      y: 7
-    },
-    { 
-      key: "Five",
-      y: 4
-    },
-    {
-      key: "Six",
-      y: 1
-    },
-    {
-      key: "Seven",
-      y: .5
-    }
+  {
+    key: "Cumulative Return",
+    values: [
+      { 
+        "label" : "CDS / Options" ,
+        "value" : 29.765957771107
+      } , 
+      { 
+        "label" : "Cash" , 
+        "value" : 0
+      } , 
+      { 
+        "label" : "Corporate Bonds" , 
+        "value" : 32.807804682612
+      } , 
+      { 
+        "label" : "Equity" , 
+        "value" : 196.45946739256
+      } , 
+      { 
+        "label" : "Index Futures" ,
+        "value" : 0.19434030906893
+      } , 
+      { 
+        "label" : "Options" , 
+        "value" : 98.079782601442
+      } , 
+      { 
+        "label" : "Preferred" , 
+        "value" : 13.925743130903
+      } , 
+      { 
+        "label" : "Not Available" , 
+        "value" : 5.1387322875705
+      }
+    ]
+  }
   ];
 }
 
