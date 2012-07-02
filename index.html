@@ -23,6 +23,10 @@
     <![endif]-->
 
     <script type="text/javascript">
+      // redirect to nvd3.com if accessed from novus.github.com/nvd3 so that disqus comments work automatically
+      if (window.location.host != 'nvd3.com')
+        window.location = 'http://nvd3.com' + window.location.pathname.replace('/nvd3','');
+
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-33058059-1']);
       _gaq.push(['_trackPageview']);
