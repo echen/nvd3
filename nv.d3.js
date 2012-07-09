@@ -4055,7 +4055,7 @@ nv.models.multiBarChart = function() {
   var multibar = nv.models.multiBar().stacked(false),
       x = multibar.xScale(),
       y = multibar.yScale(),
-      xAxis = nv.models.axis().scale(x).orient('bottom').highlightZero(false); //.showMaxMin(false), //TODO: see why showMaxMin(false) causes no ticks to be shown on x axis
+      xAxis = nv.models.axis().scale(x).orient('bottom').highlightZero(false), //.showMaxMin(false), //TODO: see why showMaxMin(false) causes no ticks to be shown on x axis
       yAxis = nv.models.axis().scale(y).orient('left'),
       legend = nv.models.legend().height(30),
       controls = nv.models.legend().height(30),
@@ -6961,7 +6961,7 @@ nv.models.stackedAreaChart = function() {
   chart.xAxis = xAxis;
   chart.yAxis = yAxis;
 
-  d3.rebind(chart, stacked, 'x', 'y', 'interactive', 'offset', 'order', 'style', 'clipEdge', 'size', 'forceX', 'forceY', 'forceSize');
+  d3.rebind(chart, stacked, 'x', 'y', 'size', 'xScale', 'yScale', 'xDomain', 'yDomain', 'sizeDomain', 'interactive', 'offset', 'order', 'style', 'clipEdge', 'forceX', 'forceY', 'forceSize');
 
   /*
   chart.x = function(_) {
