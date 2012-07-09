@@ -96,6 +96,7 @@
                   .style('stream');
 
       chart.yAxis
+          .showMaxMin(false)
           .tickFormat(d3.format(',.1f'));
 
       d3.select("#exampleTwo")
