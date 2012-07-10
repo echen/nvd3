@@ -10,11 +10,6 @@
   overflow: hidden;
 }
 
-.nvd3.background {
-  fill: none;
-  pointer-events: none;
-}
-
 
 /********************
  * TOOLTIP CSS 
@@ -92,12 +87,20 @@ svg {
 
 
 svg text {
-  font: 12px sans-serif;
+  font: normal 12px sans-serif;
 }
 
 svg .title {
  font: bold 14px Arial;
 }
+
+.nvd3 .background {
+  fill: none;
+  /*
+  pointer-events: none;
+  */
+}
+
 
 /**********
 *  Brush
@@ -345,6 +348,10 @@ svg .title {
 /**********
 *  Scatter 
 */
+
+.nvd3 .groups .point {
+  pointer-events: none;
+}
 
 .nvd3 .groups .point.hover {
   stroke-width: 20px;
