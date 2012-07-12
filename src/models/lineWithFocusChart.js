@@ -102,6 +102,7 @@ nv.models.lineWithFocusChart = function() {
         }).filter(function(d,i) { return !data[i].disabled }));
 
       lines2
+        .defined(lines.defined())
         .width(availableWidth)
         .height(availableHeight2)
         .x(lines.x())
@@ -158,7 +159,7 @@ nv.models.lineWithFocusChart = function() {
 
 
       x2Axis
-        .tickFormat(xAxis.tickFormat()) //TODO: make sure everythign set on the Axes is set on both x and x2, and y and y2 respectively
+        //.tickFormat(xAxis.tickFormat())  //exposing x2Axis so user can set differently
         .ticks( availableWidth / 100 )
         .tickSize(-availableHeight2, 0);
 
@@ -169,7 +170,7 @@ nv.models.lineWithFocusChart = function() {
 
 
       y2Axis
-        .tickFormat(yAxis.tickFormat())
+        //.tickFormat(yAxis.tickFormat())  //exposing y2Axis so user can set differently
         .ticks( availableHeight2 / 36 )
         .tickSize( -availableWidth, 0);
 
@@ -289,8 +290,10 @@ nv.models.lineWithFocusChart = function() {
   chart.legend = legend;
   chart.xAxis = xAxis;
   chart.yAxis = yAxis;
+  chart.x2Axis = x2Axis;
+  chart.y2Axis = y2Axis;
 
-  d3.rebind(chart, lines, 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id');
+  d3.rebind(chart, lines, 'defined', 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id');
 
 
   chart.margin = function(_) {

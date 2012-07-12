@@ -87,20 +87,6 @@ nv.models.linePlusBarChart = function() {
          */
 
 
-      lines
-        .width(availableWidth)
-        .height(availableHeight)
-        .color(data.map(function(d,i) {
-          return d.color || color[i % color.length];
-        }).filter(function(d,i) { return !data[i].disabled && !data[i].bar }))
-
-      bars
-        .width(availableWidth)
-        .height(availableHeight)
-        .color(data.map(function(d,i) {
-          return d.color || color[i % color.length];
-        }).filter(function(d,i) { return !data[i].disabled && data[i].bar }))
-
 
       var wrap = d3.select(this).selectAll('g.wrap.linePlusBar').data([data]);
       var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 linePlusBar').append('g');
@@ -118,7 +104,7 @@ nv.models.linePlusBarChart = function() {
 
 
       if (showLegend) {
-        legend.width(availableWidth);
+        legend.width( availableWidth / 2 );
 
         g.select('.legendWrap')
             .datum(data.map(function(series) { 
@@ -134,8 +120,25 @@ nv.models.linePlusBarChart = function() {
         }
 
         g.select('.legendWrap')
-          .attr('transform', 'translate(0,' + (-margin.top) +')');
+            .attr('transform', 'translate(' + ( availableWidth / 2 ) + ',' + (-margin.top) +')');
       }
+
+
+
+
+      lines
+        .width(availableWidth)
+        .height(availableHeight)
+        .color(data.map(function(d,i) {
+          return d.color || color[i % color.length];
+        }).filter(function(d,i) { return !data[i].disabled && !data[i].bar }))
+
+      bars
+        .width(availableWidth)
+        .height(availableHeight)
+        .color(data.map(function(d,i) {
+          return d.color || color[i % color.length];
+        }).filter(function(d,i) { return !data[i].disabled && data[i].bar }))
 
 
 
@@ -238,7 +241,8 @@ nv.models.linePlusBarChart = function() {
   chart.yAxis1 = yAxis1;
   chart.yAxis2 = yAxis2;
 
-  d3.rebind(chart, lines, 'size', 'clipVoronoi', 'interpolate');
+  d3.rebind(chart, lines, 'defined', 'size', 'clipVoronoi', 'interpolate');
+  //TODO: consider rebinding x, y and some other stuff, and simply do soemthign lile bars.x(lines.x()), etc.
   //d3.rebind(chart, lines, 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id');
 
   //d3.rebind(chart, lines, 'interactive');
