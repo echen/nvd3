@@ -36,18 +36,13 @@ nv.models.multiBarChart = function() {
   var showTooltip = function(e, offsetElement) {
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
-        x = xAxis.tickFormat()(multibar.x()(e.point)),
-        y = yAxis.tickFormat()(multibar.y()(e.point)),
+        x = xAxis.tickFormat()(multibar.x()(e.point, e.pointIndex)),
+        y = yAxis.tickFormat()(multibar.y()(e.point, e.pointIndex)),
         content = tooltip(e.series.key, x, y, e, chart);
 
     nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's');
   };
 
-  //TODO: let user select default
-  var controlsData = [
-    { key: 'Grouped', disabled: multibar.stacked() },
-    { key: 'Stacked', disabled: !multibar.stacked() }
-  ];
 
   function chart(selection) {
     selection.each(function(data) {
@@ -58,7 +53,6 @@ nv.models.multiBarChart = function() {
                              - margin.left - margin.right,
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
-
 
       x = multibar.xScale();
       y = multibar.yScale();
@@ -106,6 +100,11 @@ nv.models.multiBarChart = function() {
 
 
       if (showControls) {
+        var controlsData = [
+          { key: 'Grouped', disabled: multibar.stacked() },
+          { key: 'Stacked', disabled: !multibar.stacked() }
+        ];
+
         controls.width(180).color(['#444', '#444', '#444']);
         g.select('.controlsWrap')
             .datum(controlsData)
