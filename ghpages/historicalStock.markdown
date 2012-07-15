@@ -22,16 +22,21 @@ title: Historical Stock Data using Yahoo Pipes
     <option value="m">Monthly</option>
     <!--<option value="v">Dividends Only</option>-->
   </select>
-  <button type="submit" id="getData" name="getData" class="btn btn-primary">Get Data</button>
+  <button type="submit" id="getData" name="getData" class="btn btn-primary pull-right">Get Data</button>
 </form>
 
 <h1>
   <span id="stockName"> </span>
   <span id="stockValue"> </span>
   <!--<span id="stockSymbol"> </span>-->
+
   <small>
     <span id="stockChange"> </span>
     (<span id="stockChangePercent"> </span>)
+  </small>
+
+  <small id="stockLoading" class="pull-right" style="display:none">
+    <img src="images/spinner.gif" style="height: 24px; width: 24px; display: inline-block"> Loading....
   </small>
 </h1>
 

@@ -42,6 +42,8 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
   endDate = endDate || 'now';
   frequency = frequency || 'd';
 
+  var loading = d3.select('#stockLoading').style('display', 'block');
+
   d3.csv('http://pipes.yahoo.com/pipes/pipe.run?_id=e9668915a9ae04cb96c6f8c63279ad7f&_render=csv&enddate=' + endDate + '&startdate=' + startDate + '&frequency=' + frequency + '&ticker=' + symbol, function(data) {
     //nv.log(data);
 
@@ -105,6 +107,9 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
       d3.select('#chart svg')
           .datum(lineData)
         .transition().duration(500).call(chart);
+
+
+      loading.style('display', 'none');
 
       return chart;
     });
