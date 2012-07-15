@@ -12,7 +12,7 @@ nv.utils = {}; // Utility subsystem
 nv.models = {}; //stores all the possible models/components
 nv.charts = {}; //stores all the ready to use charts
 nv.graphs = []; //stores all the graphs currently on the page
-nv.log = {}; //stores some statistics and potential error messages
+nv.logs = {}; //stores some statistics and potential error messages
 
 nv.dispatch = d3.dispatch('render_start', 'render_end');
 
@@ -22,18 +22,25 @@ nv.dispatch = d3.dispatch('render_start', 'render_end');
 //  Public Core NV functions
 
 nv.dispatch.on('render_start', function(e) {
-  nv.log.startTime = +new Date;
+  nv.logs.startTime = +new Date;
 });
 
 nv.dispatch.on('render_end', function(e) {
-  nv.log.endTime = +new Date;
-  nv.log.totalTime = nv.log.endTime - nv.log.startTime;
-  if (nv.dev && console.log) console.log('total', nv.log.totalTime); //used for development, to keep track of graph generation times
+  nv.logs.endTime = +new Date;
+  nv.logs.totalTime = nv.logs.endTime - nv.logs.startTime;
+  if (nv.dev && console.log) console.log('total', nv.logs.totalTime); //used for development, to keep track of graph generation times
 });
 
 
 // ********************************************
 //  Public Core NV functions
+
+// Logs all arguments, and returns the last so you can test things in place
+nv.log = function() {
+  if (nv.dev && console.log) console.log.apply(console, arguments);
+  return arguments[arguments.length - 1];
+}
+
 
 nv.render = function render(step) {
   step = step || 1; // number of graphs to generate in each timout loop
@@ -2942,6 +2949,19 @@ nv.models.lineChart = function() {
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide');
 
   var showTooltip = function(e, offsetElement) {
+
+    // New addition to calculate position if SVG is scaled with viewBox, may move
+    if (offsetElement) {
+      var svg = d3.select(offsetElement).select('svg');
+      var viewBox = svg.attr('viewBox');
+      if (viewBox) {
+        viewBox = viewBox.split(' ');
+        var ratio = parseInt(svg.style('width')) / viewBox[2];
+        e.pos[0] = e.pos[0] * ratio;
+        e.pos[1] = e.pos[1] * ratio;
+      }
+    }
+
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
         x = xAxis.tickFormat()(lines.x()(e.point, e.pointIndex)),
