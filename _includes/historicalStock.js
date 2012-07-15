@@ -21,7 +21,8 @@ function getStockInfo(symbol) {
   d3.json('http://pipes.yahoo.com/pipes/pipe.run?_id=ctBz1YeB3BGxfaUVqWIyXQ&_render=json&StockNames=' + symbol, function(data) {
     var info = data.value.items[0];
 
-   // nv.log(info);
+    //nv.log(info);
+    if (typeof info == 'undefined' || info.StockValue == 0) return;
 
     d3.select('#stockName').text(info.StockName);
     //d3.select('#stockSymbol').text(info.Symbol);
@@ -46,6 +47,10 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
 
   d3.csv('http://pipes.yahoo.com/pipes/pipe.run?_id=e9668915a9ae04cb96c6f8c63279ad7f&_render=csv&enddate=' + endDate + '&startdate=' + startDate + '&frequency=' + frequency + '&ticker=' + symbol, function(data) {
     //nv.log(data);
+
+    loading.style('display', 'none');
+
+    if (!data) return;
 
     data = data.reverse(); //order data oldest to newest, left to right
 
@@ -108,8 +113,6 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
           .datum(lineData)
         .transition().duration(500).call(chart);
 
-
-      loading.style('display', 'none');
 
       return chart;
     });
