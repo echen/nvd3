@@ -33,6 +33,7 @@ title: Historical Stock Data using Yahoo Pipes
   <small>
     <span id="stockChange"> </span>
     (<span id="stockChangePercent"> </span>)
+    <span id="stockDate"> </span>
   </small>
 
   <small id="stockLoading" class="pull-right" style="display:none">
