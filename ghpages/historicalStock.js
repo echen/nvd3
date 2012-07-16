@@ -34,7 +34,7 @@ function getStockInfo(symbol) {
         .text(d3.format('.2%')(parseInt(info.Change) / info.StockValue))
         .style('color', parseFloat(info.Change) > 0 ? 'green' : 'red' );
     d3.select('#stockDate')
-        .text(nv.time.format('%b %e %Y')(info.Date));
+        .text(d3.time.format('%b %e %Y')(info.Date));
 
   });
 }
