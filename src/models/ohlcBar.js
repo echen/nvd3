@@ -1,5 +1,5 @@
 //TODO: eitehr drastically clean up or deprecate this model
-nv.models.historicalStock = function() {
+nv.models.ohlcBar = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
@@ -100,11 +100,6 @@ nv.models.historicalStock = function() {
           //.attr('x', 0 )
           //.attr('y', function(d,i) {  return y(Math.max(0, getY(d,i))) })
           //.attr('height', function(d,i) { return Math.abs(y(getY(d,i)) - y(0)) })
-          .attr('d', function(d,i) {
-            var w = (availableWidth / data[0].values.length) * .9;
-            //nv.log(this, getOpen(d,i), getClose(d,i), y(getOpen(d,i)), y(getClose(d,i)));
-            return 'm0,0l0,' + (y(getOpen(d,i)) - y(getHigh(d,i))) + 'l' + (-w/2) + ',0l' + (w/2) + ',0l0,' + (y(getLow(d,i)) - y(getOpen(d,i))) +'l0,'+ (y(getClose(d,i)) - y(getLow(d,i))) +',l' + (w/2) + ',0l' + (-w/2) + ',0z';
-          })
           .on('mouseover', function(d,i) {
             d3.select(this).classed('hover', true);
             dispatch.elementMouseover({
@@ -155,6 +150,11 @@ nv.models.historicalStock = function() {
       ticks
           .attr('class', function(d,i) { return getOpen(d,i) > getClose(d,i) ? 'tick negative' : 'tick positive'})
           .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',' + y(getHigh(d,i)) + ')'; })  
+          .attr('d', function(d,i) {
+            var w = (availableWidth / data[0].values.length) * .9;
+            //nv.log(this, getOpen(d,i), getClose(d,i), y(getOpen(d,i)), y(getClose(d,i)));
+            return 'm0,0l0,' + (y(getOpen(d,i)) - y(getHigh(d,i))) + 'l' + (-w/2) + ',0l' + (w/2) + ',0l0,' + (y(getLow(d,i)) - y(getOpen(d,i))) +'l0,'+ (y(getClose(d,i)) - y(getLow(d,i))) +',l' + (w/2) + ',0l' + (-w/2) + ',0z';
+          })
           //.attr('width', (availableWidth / data[0].values.length) * .9 )
 
 
