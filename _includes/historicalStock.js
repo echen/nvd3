@@ -33,6 +33,8 @@ function getStockInfo(symbol) {
     d3.select('#stockChangePercent')
         .text(d3.format('.2%')(parseInt(info.Change) / info.StockValue))
         .style('color', parseFloat(info.Change) > 0 ? 'green' : 'red' );
+    d3.select('#stockDate')
+        .text(d3.time.format('%b %e %Y')(new Date(info.Date)));
 
   });
 }
@@ -58,9 +60,10 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
         {
           "key": "Volume",
           "bar": true,
-          "values": data.map(function(d) {
+          "values": data.map(function(d,i) {
             return {
               'x': Date.parse(d.Date),
+              'dx': i,
               'y': d.Volume / 1000  //TODO: figure out why y domain was maxing out at 9933800
             }
           })
@@ -68,10 +71,15 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
         {
           "key": "Price",
           "bar": false,
-          "values": data.map(function(d) {
+          "values": data.map(function(d,i) {
             return {
               'x': Date.parse(d.Date),
+              'dx': i,
               'y': d.Close
+              'open': d.Open,
+              'close': d.Close,
+              'high': d.High,
+              'low': d.Low
             }
           })
         }
@@ -83,16 +91,30 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
     d3.selectAll('#chart svg *').remove();
 
     nv.addGraph(function() {
-      var chart = nv.models.linePlusBarChart()
-          .margin({top: 30, right: 70, bottom: 50, left: 55})
+      var chart = nv.models.historicalStockChart()
+          //.margin({top: 30, right: 70, bottom: 50, left: 55})
           .x(function(d,i) { return i })
           .color(d3.scale.category10().range());
 
       // Use if we are removing weekends/holidays
       chart.xAxis
+          //.tickPadding(7)
+          .tickFormat(function(d) {
+            return '';
+          });
+
+      chart.xAxis2
           .tickPadding(7)
           .tickFormat(function(d) {
+            d = parseInt(d);
             var dx = lineData[0].values[d] && lineData[0].values[d].x || 0;
+            return d3.time.format('%x')(new Date(dx))
+          });
+
+      chart.xAxis3
+          .tickPadding(7)
+          .tickFormat(function(d) {
+            var dx = lineData[0].values[d] && lineData[0].values[parseInt(d)].x || 0;
             return d3.time.format('%x')(new Date(dx))
           });
 
@@ -102,10 +124,16 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
       //});
 
       chart.yAxis1
-          .tickFormat(function(d) { return d3.format(',f')(d) + 'K' });
+          .tickFormat(d3.format(',f'));
+          //.tickFormat(function(d) { return d3.format(',f')(d) + 'K' });
 
       chart.yAxis2
-          .tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
+          .tickFormat(d3.format(',.2f'));
+          //.tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
+
+      chart.yAxis3
+          .tickFormat(d3.format(',.2f'));
+          //.tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
 
       chart.bars.forceY([0]);
 
