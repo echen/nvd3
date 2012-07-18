@@ -75,7 +75,7 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
             return {
               'x': Date.parse(d.Date),
               'dx': i,
-              'y': d.Close
+              'y': d.Close,
               'open': d.Open,
               'close': d.Close,
               'high': d.High,
