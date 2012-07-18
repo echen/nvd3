@@ -93,7 +93,7 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
     nv.addGraph(function() {
       var chart = nv.models.historicalStockChart()
           //.margin({top: 30, right: 70, bottom: 50, left: 55})
-          .x(function(d,i) { return i })
+          .x(function(d,i) { return d.dx })
           .color(d3.scale.category10().range());
 
       // Use if we are removing weekends/holidays
