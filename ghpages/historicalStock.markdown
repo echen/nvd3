@@ -1,16 +1,16 @@
 ---
 layout: ex
-title: Historical Stock OHLC Bar Chart
+title: Historical Stock Data using Yahoo Pipes
 ---
 
-## Historical Stock OHLC Bar Chart
+## Historical Stock Data using Yahoo Pipes
 
 <form id="stockForm" class="well form-inline">
   <label for="ticker">Stock Ticker: </label>
   <input type="text" id="ticker" class="input-small" name="ticker" value="GOOG"></input>
 
   <label for="endDate">Start Date: </label>
-  <input type="text" id="startDate" class="input-small" name="startDate" value="-1 year"></input>
+  <input type="text" id="startDate" class="input-small" name="startDate" value="-2 year"></input>
 
   <label for="endDate">End Date: </label>
   <input type="text" id="endDate" class="input-small" name="endDate" value="now"></input>

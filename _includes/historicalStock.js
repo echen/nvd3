@@ -92,13 +92,11 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
 
     nv.addGraph(function() {
       var chart = nv.models.historicalStockChart()
-          //.margin({top: 30, right: 70, bottom: 50, left: 55})
+          .margin3({top: 0, right: 30, bottom: 5, left: 80})
           .x(function(d,i) { return d.dx })
           .color(d3.scale.category10().range());
 
-      // Use if we are removing weekends/holidays
       chart.xAxis
-          //.tickPadding(7)
           .tickFormat(function(d) {
             return '';
           });
@@ -112,30 +110,21 @@ function getHistoricalStockData(symbol, startDate, endDate, frequency) {
           });
 
       chart.xAxis3
-          .tickPadding(7)
-          .tickFormat(function(d) {
-            var dx = lineData[0].values[d] && lineData[0].values[parseInt(d)].x || 0;
-            return d3.time.format('%x')(new Date(dx))
-          });
+          .tickPadding(-12)
 
-      // Use to treat dates linear
-      //chart.xAxis.tickFormat(function(d) {
-        //return d3.time.format('%x')(new Date(d))
-      //});
 
       chart.yAxis1
           .tickFormat(d3.format(',f'));
-          //.tickFormat(function(d) { return d3.format(',f')(d) + 'K' });
 
       chart.yAxis2
           .tickFormat(d3.format(',.2f'));
-          //.tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
 
       chart.yAxis3
-          .tickFormat(d3.format(',.2f'));
-          //.tickFormat(function(d) { return '$' + d3.format(',.2f')(d) });
+          .tickFormat(function() { return null })
+
 
       chart.bars.forceY([0]);
+
 
       d3.select('#chart svg')
           .datum(lineData)
