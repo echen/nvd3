@@ -1,9 +1,9 @@
 ---
 layout: ex
-title: Historical Stock Data using Yahoo Pipes
+title: Historical Stock OHLC Bar Chart
 ---
 
-## Historical Stock Data using Yahoo Pipes
+## Historical Stock OHLC Bar Chart
 
 <form id="stockForm" class="well form-inline">
   <label for="ticker">Stock Ticker: </label>
