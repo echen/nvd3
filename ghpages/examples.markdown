@@ -47,12 +47,6 @@ For the most <strong>up to date list of examples</strong>, please <strong>clone 
   </li>
 
   <li class="span3">
-    <a href="../ghpages/historicalStock.html" class="thumbnail">
-      <img src="../img/historicalstock.png">
-    </a>
-  </li>
-
-  <li class="span3">
     <a href="../ghpages/linePlusBar.html" class="thumbnail">
       <img src="../img/lineplusbar.png">
     </a>
