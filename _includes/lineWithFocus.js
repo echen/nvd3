@@ -8,6 +8,9 @@ nv.addGraph(function() {
   chart.yAxis
       .tickFormat(d3.format(',.2f'));
 
+  chart.y2Axis
+      .tickFormat(d3.format(',.2f'));
+
   d3.select('#chart svg')
       .datum(testData())
     .transition().duration(500)
