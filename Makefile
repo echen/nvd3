@@ -31,7 +31,8 @@ JS_FILES = \
 	src/outro.js
 
 JS_COMPILER = \
-	uglifyjs
+	cat
+#	uglifyjs
 
 all: nv.d3.js nv.d3.min.js
 nv.d3.js: $(JS_FILES)
