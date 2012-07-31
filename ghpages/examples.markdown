@@ -64,5 +64,23 @@ For the most <strong>up to date list of examples</strong>, please <strong>clone 
     </a>
   </li>
 
+  <li class="span3">
+    <a href="../ghpages/pie.html" class="thumbnail">
+      <img src="../img/pie.png">
+    </a>
+  </li>
+
+  <li class="span3">
+    <a href="../ghpages/bullet.html" class="thumbnail">
+      <img src="../img/bullet.png">
+    </a>
+  </li>
+
+  <li class="span3">
+    <a href="../ghpages/indentedtree.html" class="thumbnail">
+      <img src="../img/htmlindentedtree.png">
+    </a>
+  </li>
+
 </ul>
 

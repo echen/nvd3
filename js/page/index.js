@@ -1,10 +1,4 @@
 
-/*****
- * This file is VERY ugly... but putting this together to force myself into fixing the API,
- * and making it consistent with the entire collection.
- * TODO: REFACTOR when API is fixed
- *****/
-
 
 (function() {
 
@@ -96,6 +90,7 @@
                   .style('stream');
 
       chart.yAxis
+          .showMaxMin(false)
           .tickFormat(d3.format(',.1f'));
 
       d3.select("#exampleTwo")

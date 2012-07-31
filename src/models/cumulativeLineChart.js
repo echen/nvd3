@@ -1,25 +1,36 @@
 
 nv.models.cumulativeLineChart = function() {
-  var margin = {top: 30, right: 20, bottom: 50, left: 60},
-      color = d3.scale.category20().range(),
-      width = null, 
+
+  //============================================================
+  // Public Variables with Default Settings
+  //------------------------------------------------------------
+
+  var margin = {top: 30, right: 30, bottom: 50, left: 60},
+      color = nv.utils.getColor(),
+      width = null,
       height = null,
       showLegend = true,
       tooltips = true,
-      tooltip = function(key, x, y, e, graph) { 
+      showRescaleToggle = true, //TODO: get rescale y functionality back (need to calculate exten of y for ALL possible re-zero points
+      rescaleY = true,
+      tooltip = function(key, x, y, e, graph) {
         return '<h3>' + key + '</h3>' +
                '<p>' +  y + ' at ' + x + '</p>'
       },
-      showRescaleToggle = false,
-      rescaleY = true;
+      x, y, //can be accessed via chart.lines.[x/y]Scale()
+      noData = "No Data Available."
+      ;
+
+
+  //============================================================
+  // Private Variables
+  //------------------------------------------------------------
 
   var lines = nv.models.line(),
-      x = lines.xScale(),
-      y = lines.yScale(),
       dx = d3.scale.linear(),
       id = lines.id(),
-      xAxis = nv.models.axis().scale(x).orient('bottom'),
-      yAxis = nv.models.axis().scale(y).orient('left'),
+      xAxis = nv.models.axis().orient('bottom').tickPadding(5),
+      yAxis = nv.models.axis().orient('left'),
       legend = nv.models.legend().height(30),
       controls = nv.models.legend().height(30),
       dispatch = d3.dispatch('tooltipShow', 'tooltipHide'),
@@ -31,15 +42,10 @@ nv.models.cumulativeLineChart = function() {
   ];
 
   var showTooltip = function(e, offsetElement) {
-    //console.log('left: ' + offsetElement.offsetLeft);
-    //console.log('top: ' + offsetElement.offsetLeft);
-
-    //TODO: FIX offsetLeft and offSet top do not work if container is shifted anywhere
-    //var offsetElement = document.getElementById(selector.substr(1)),
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
-        x = xAxis.tickFormat()(lines.x()(e.point)),
-        y = yAxis.tickFormat()(lines.y()(e.point)),
+        x = xAxis.tickFormat()(lines.x()(e.point, e.pointIndex)),
+        y = yAxis.tickFormat()(lines.y()(e.point, e.pointIndex)),
         content = tooltip(e.series.key, x, y, e, chart);
 
     nv.tooltip.show([left, top], content);
@@ -58,7 +64,7 @@ nv.models.cumulativeLineChart = function() {
     d.i = Math.round(dx.invert(d.x));
 
     //d3.transition(d3.select('.chart-' + id)).call(chart);
-    d3.select(this).attr("transform", "translate(" + dx(d.i) + ",0)");
+    d3.select(this).attr('transform', 'translate(' + dx(d.i) + ',0)');
   }
 
   function dragEnd(d,i) {
@@ -70,7 +76,7 @@ nv.models.cumulativeLineChart = function() {
 
   function chart(selection) {
     selection.each(function(data) {
-      var container = d3.select(this).classed('chart-' + id, true),
+      var container = d3.select(this).classed('nv-chart-' + id, true),
           that = this;
 
       var availableWidth = (width  || parseInt(container.style('width')) || 960)
@@ -79,7 +85,50 @@ nv.models.cumulativeLineChart = function() {
                              - margin.top - margin.bottom;
 
 
-      var series = indexify(index.i, data);
+      //------------------------------------------------------------
+      // Display No Data message if there's nothing to show.
+
+      if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
+        container.append('text')
+          .attr('class', 'nvd3 nv-noData')
+          .attr('x', availableWidth / 2)
+          .attr('y', availableHeight / 2)
+          .attr('dy', '-.7em')
+          .style('text-anchor', 'middle')
+          .text(noData);
+          return chart;
+      } else {
+        container.select('.nv-noData').remove();
+      }
+
+      //------------------------------------------------------------
+
+
+
+      x = lines.xScale();
+      y = lines.yScale();
+
+      if (!rescaleY) {
+        var seriesDomains = data
+          .filter(function(series) { return !series.disabled })
+          .map(function(series,i) {
+            var initialDomain = d3.extent(series.values, lines.y());
+
+            return [
+              (initialDomain[0] - initialDomain[1]) / (1 + initialDomain[1]),
+              (initialDomain[1] - initialDomain[0]) / (1 + initialDomain[0])
+            ];
+          });
+
+        var completeDomain = [
+          d3.min(seriesDomains, function(d) { return d[0] }),
+          d3.max(seriesDomains, function(d) { return d[1] })
+        ]
+
+        lines.yDomain(completeDomain);
+      } else {
+        lines.yDomain(null);
+      }
 
 
       dx  .domain([0, data[0].values.length - 1]) //Assumes all series have same length
@@ -87,26 +136,26 @@ nv.models.cumulativeLineChart = function() {
           .clamp(true);
 
 
+      var data = indexify(index.i, data);
 
-      var wrap = container.selectAll('g.wrap.cumulativeLine').data([series]);
-      var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 cumulativeLine').append('g');
 
-      gEnter.append('g').attr('class', 'x axis');
-      gEnter.append('g').attr('class', 'y axis');
-      gEnter.append('g').attr('class', 'linesWrap');
-      gEnter.append('g').attr('class', 'legendWrap');
-      gEnter.append('g').attr('class', 'controlsWrap');
+      var wrap = container.selectAll('g.nv-wrap.nv-cumulativeLine').data([data]);
+      var gEnter = wrap.enter().append('g').attr('class', 'nvd3 nv-wrap nv-cumulativeLine').append('g');
+
+      gEnter.append('g').attr('class', 'nv-x nv-axis');
+      gEnter.append('g').attr('class', 'nv-y nv-axis');
+      gEnter.append('g').attr('class', 'nv-linesWrap');
+      gEnter.append('g').attr('class', 'nv-legendWrap');
+      gEnter.append('g').attr('class', 'nv-controlsWrap');
 
 
       var g = wrap.select('g');
 
 
-
-
       if (showLegend) {
         legend.width(availableWidth);
 
-        g.select('.legendWrap')
+        g.select('.nv-legendWrap')
             .datum(data)
             .call(legend);
 
@@ -116,14 +165,14 @@ nv.models.cumulativeLineChart = function() {
                              - margin.top - margin.bottom;
         }
 
-        g.select('.legendWrap')
+        g.select('.nv-legendWrap')
             .attr('transform', 'translate(0,' + (-margin.top) +')')
       }
 
 
       if (showRescaleToggle) {
         controls.width(140).color(['#444', '#444', '#444']);
-        g.select('.controlsWrap')
+        g.select('.nv-controlsWrap')
             .datum(controlsData)
             .attr('transform', 'translate(0,' + (-margin.top) +')')
             .call(controls);
@@ -132,10 +181,12 @@ nv.models.cumulativeLineChart = function() {
 
 
       lines
+        //.x(function(d) { return d.x })
+        .y(function(d) { return d.display.y })
         .width(availableWidth)
         .height(availableHeight)
-        .color(series.map(function(d,i) {
-          return d.color || color[i % color.length];
+        .color(data.map(function(d,i) {
+          return d.color || color(d, i);
         }).filter(function(d,i) { return !data[i].disabled }));
 
 
@@ -143,15 +194,15 @@ nv.models.cumulativeLineChart = function() {
       g.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      var linesWrap = g.select('.linesWrap')
-          .datum(series.filter(function(d) { return !d.disabled }))
+      var linesWrap = g.select('.nv-linesWrap')
+          .datum(data.filter(function(d) { return !d.disabled }))
 
       d3.transition(linesWrap).call(lines);
 
 
-      var indexLine = linesWrap.selectAll('.indexLine')
+      var indexLine = linesWrap.selectAll('.nv-indexLine')
           .data([index]);
-      indexLine.enter().append('rect').attr('class', 'indexLine')
+      indexLine.enter().append('rect').attr('class', 'nv-indexLine')
           .attr('width', 3)
           .attr('x', -2)
           .attr('fill', 'red')
@@ -159,7 +210,7 @@ nv.models.cumulativeLineChart = function() {
           .call(indexDrag)
 
       indexLine
-          .attr("transform", function(d) { return "translate(" + dx(d.i) + ",0)" })
+          .attr('transform', function(d) { return 'translate(' + dx(d.i) + ',0)' })
           .attr('height', availableHeight)
 
 
@@ -169,9 +220,9 @@ nv.models.cumulativeLineChart = function() {
         .ticks( availableWidth / 100 )
         .tickSize(-availableHeight, 0);
 
-      g.select('.x.axis')
+      g.select('.nv-x.nv-axis')
           .attr('transform', 'translate(0,' + y.range()[0] + ')');
-      d3.transition(g.select('.x.axis'))
+      d3.transition(g.select('.nv-x.nv-axis'))
           .call(xAxis);
 
 
@@ -180,9 +231,14 @@ nv.models.cumulativeLineChart = function() {
         .ticks( availableHeight / 36 )
         .tickSize( -availableWidth, 0);
 
-      d3.transition(g.select('.y.axis'))
+      d3.transition(g.select('.nv-y.nv-axis'))
           .call(yAxis);
 
+
+
+      //============================================================
+      // Event Handling/Dispatching (in chart's scope)
+      //------------------------------------------------------------
 
       controls.dispatch.on('legendClick', function(d,i) { 
         d.disabled = !d.disabled;
@@ -200,7 +256,7 @@ nv.models.cumulativeLineChart = function() {
         if (!data.filter(function(d) { return !d.disabled }).length) {
           data.map(function(d) {
             d.disabled = false;
-            wrap.selectAll('.series').classed('disabled', false);
+            wrap.selectAll('.nv-series').classed('disabled', false);
             return d;
           });
         }
@@ -221,34 +277,51 @@ nv.models.cumulativeLineChart = function() {
       });
 */
 
-      lines.dispatch.on('elementMouseover.tooltip', function(e) {
-        e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
-        dispatch.tooltipShow(e);
+      dispatch.on('tooltipShow', function(e) {
+        if (tooltips) showTooltip(e, that.parentNode);
       });
-      if (tooltips) dispatch.on('tooltipShow', function(e) { showTooltip(e, that.parentNode) } ); // TODO: maybe merge with above?
 
-      lines.dispatch.on('elementMouseout.tooltip', function(e) {
-        dispatch.tooltipHide(e);
-      });
-      if (tooltips) dispatch.on('tooltipHide', nv.tooltip.cleanup);
 
     });
 
 
     //TODO: decide if this is a good idea, and if it should be in all models
     chart.update = function() { chart(selection) };
+    chart.container = this; // I need a reference to the container in order to have outside code check if the chart is visible or not
 
 
     return chart;
   }
 
 
+  //============================================================
+  // Event Handling/Dispatching (out of chart's scope)
+  //------------------------------------------------------------
+
+  lines.dispatch.on('elementMouseover.tooltip', function(e) {
+    e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
+    dispatch.tooltipShow(e);
+  });
+
+  lines.dispatch.on('elementMouseout.tooltip', function(e) {
+    dispatch.tooltipHide(e);
+  });
+
+  dispatch.on('tooltipHide', function() {
+    if (tooltips) nv.tooltip.cleanup();
+  });
+
+
+  //============================================================
+  // Global getters and setters
+  //------------------------------------------------------------
+
   chart.dispatch = dispatch;
   chart.legend = legend;
   chart.xAxis = xAxis;
   chart.yAxis = yAxis;
 
-  d3.rebind(chart, lines, 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id');
+  d3.rebind(chart, lines, 'defined', 'isArea', 'x', 'y', 'size', 'xDomain', 'yDomain', 'forceX', 'forceY', 'interactive', 'clipEdge', 'clipVoronoi', 'id');
 
 
   chart.margin = function(_) {
@@ -271,8 +344,8 @@ nv.models.cumulativeLineChart = function() {
 
   chart.color = function(_) {
     if (!arguments.length) return color;
-    color = _;
-    legend.color(_);
+    color = nv.utils.getColor(_);
+    legend.color(color);
     return chart;
   };
 
@@ -294,33 +367,35 @@ nv.models.cumulativeLineChart = function() {
     return chart;
   };
 
+  chart.noData = function(_) {
+    if (!arguments.length) return noData;
+    noData = _;
+    return chart;
+  };
 
 
-  // ********** FUNCTIONS **********
+
+  //============================================================
+  // Functions
+  //------------------------------------------------------------
 
   /* Normalize the data according to an index point. */
   function indexify(idx, data) {
     return data.map(function(line, i) {
       var v = lines.y()(line.values[idx], idx);
 
-      return {
-        key: line.key,
-        values: line.values.map(function(point, pointIndex) {
-          return {'x': lines.x()(point, pointIndex), 'y': (lines.y()(point, pointIndex) - v) / (1 + v) };
-        }),
-        disabled: line.disabled,
-        hover: line.hover
-        /*
-        if (v < -.9) {
-          //if a series loses more than 100%, calculations fail.. anything close can cause major distortion (but is mathematically currect till it hits 100)
-        }
-        */
-      };
-    });
-  };
-
-
-
+      line.values = line.values.map(function(point, pointIndex) {
+        point.display = {'y': (lines.y()(point, pointIndex) - v) / (1 + v) };
+        return point;
+      })
+      /*
+      if (v < -.9) {
+        //if a series loses more than 100%, calculations fail.. anything close can cause major distortion (but is mathematically currect till it hits 100)
+      }
+      */
+      return line;
+    })
+  }
 
 
   return chart;

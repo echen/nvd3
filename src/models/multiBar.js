@@ -1,33 +1,39 @@
 
 nv.models.multiBar = function() {
+
+  //============================================================
+  // Public Variables with Default Settings
+  //------------------------------------------------------------
+
   var margin = {top: 0, right: 0, bottom: 0, left: 0},
       width = 960,
       height = 500,
+      x = d3.scale.ordinal(),
+      y = d3.scale.linear(),
       id = Math.floor(Math.random() * 10000), //Create semi-unique ID in case user doesn't select one
       getX = function(d) { return d.x },
       getY = function(d) { return d.y },
       forceY = [0], // 0 is forced by default.. this makes sense for the majority of bar graphs... user can always do chart.forceY([]) to remove
       clipEdge = true,
       stacked = false,
-      color = d3.scale.category20().range(),
+      color = nv.utils.defaultColor(),
       delay = 1200,
-      xDomain, yDomain,
-      x0, y0;
+      xDomain, yDomain;
+
+
+  //============================================================
+  // Private Variables
+  //------------------------------------------------------------
 
   //var x = d3.scale.linear(),
-  var x = d3.scale.ordinal(),
-      y = d3.scale.linear(),
-      dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout');
+  var dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout'),
+      x0, y0;
 
 
   function chart(selection) {
     selection.each(function(data) {
       var availableWidth = width - margin.left - margin.right,
           availableHeight = height - margin.top - margin.bottom;
-
-      //store old scales if they exist
-      x0 = x0 || x;
-      y0 = y0 || y;
 
       if (stacked) {
       //var stackedData = d3.layout.stack()
@@ -51,7 +57,7 @@ nv.models.multiBar = function() {
 
 
       var seriesData = (xDomain && yDomain) ? [] : // if we know xDomain and yDomain, no need to calculate
-            data.map(function(d) { 
+            data.map(function(d) {
               return d.values.map(function(d,i) {
                 return { x: getX(d,i), y: getY(d,i), y0: d.y0 }
               })
@@ -64,13 +70,34 @@ nv.models.multiBar = function() {
           .range([availableHeight, 0]);
 
 
+      // If scale's domain don't have a range, slightly adjust to make one... so a chart can show a single data point
+      if (x.domain()[0] === x.domain()[1] || y.domain()[0] === y.domain()[1]) singlePoint = true;
+      if (x.domain()[0] === x.domain()[1])
+        x.domain()[0] ?
+            x.domain([x.domain()[0] - x.domain()[0] * 0.01, x.domain()[1] + x.domain()[1] * 0.01])
+          : x.domain([-1,1]);
 
-      var wrap = d3.select(this).selectAll('g.wrap.multibar').data([data]);
-      var wrapEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 multibar');
+      if (y.domain()[0] === y.domain()[1])
+        y.domain()[0] ?
+            y.domain([y.domain()[0] + y.domain()[0] * 0.01, y.domain()[1] - y.domain()[1] * 0.01])
+          : y.domain([-1,1]);
+
+
+      //store old scales if they exist
+      x0 = x0 || x;
+      y0 = y0 || y;
+
+
+
+
+
+
+      var wrap = d3.select(this).selectAll('g.nv-wrap.nv-multibar').data([data]);
+      var wrapEnter = wrap.enter().append('g').attr('class', 'nvd3 nv-wrap nv-multibar');
       var defsEnter = wrapEnter.append('defs');
       var gEnter = wrapEnter.append('g');
 
-      gEnter.append('g').attr('class', 'groups');
+      gEnter.append('g').attr('class', 'nv-groups');
 
       var g = wrap.select('g')
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -78,17 +105,17 @@ nv.models.multiBar = function() {
 
 
       defsEnter.append('clipPath')
-          .attr('id', 'edge-clip-' + id)
+          .attr('id', 'nv-edge-clip-' + id)
         .append('rect');
-      wrap.select('#edge-clip-' + id + ' rect')
+      wrap.select('#nv-edge-clip-' + id + ' rect')
           .attr('width', availableWidth)
           .attr('height', availableHeight);
 
-      g   .attr('clip-path', clipEdge ? 'url(#edge-clip-' + id + ')' : '');
+      g   .attr('clip-path', clipEdge ? 'url(#nv-edge-clip-' + id + ')' : '');
 
 
 
-      var groups = wrap.select('.groups').selectAll('.group')
+      var groups = wrap.select('.nv-groups').selectAll('.nv-group')
           .data(function(d) { return d }, function(d) { return d.key });
       groups.enter().append('g')
           .style('stroke-opacity', 1e-6)
@@ -96,35 +123,36 @@ nv.models.multiBar = function() {
       d3.transition(groups.exit())
           //.style('stroke-opacity', 1e-6)
           //.style('fill-opacity', 1e-6)
-        .selectAll('rect.bar')
+        .selectAll('rect.nv-bar')
         .delay(function(d,i) { return i * delay/ data[0].values.length })
           .attr('y', function(d) { return stacked ? y0(d.y0) : y0(0) })
           .attr('height', 0)
           .remove();
       groups
-          .attr('class', function(d,i) { return 'group series-' + i })
+          .attr('class', function(d,i) { return 'nv-group nv-series-' + i })
           .classed('hover', function(d) { return d.hover })
-          .style('fill', function(d,i){ return color[i % color.length] })
-          .style('stroke', function(d,i){ return color[i % color.length] });
+          .style('fill', function(d,i){ return color(d, i) })
+          .style('stroke', function(d,i){ return color(d, i) });
       d3.transition(groups)
           .style('stroke-opacity', 1)
           .style('fill-opacity', .75);
 
 
-      var bars = groups.selectAll('rect.bar')
+      var bars = groups.selectAll('rect.nv-bar')
           .data(function(d) { return d.values });
 
       bars.exit().remove();
 
 
       var barsEnter = bars.enter().append('rect')
-          .attr('class', function(d,i) { return getY(d,i) < 0 ? 'bar negative' : 'bar positive'})
+          .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
           .attr('x', function(d,i,j) {
               return stacked ? 0 : (j * x.rangeBand() / data.length )
           })
           .attr('y', function(d) { return y0(stacked ? d.y0 : 0) })
           .attr('height', 0)
-          .attr('width', x.rangeBand() / (stacked ? 1 : data.length) )
+          .attr('width', x.rangeBand() / (stacked ? 1 : data.length) );
+      bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
             d3.select(this).classed('hover', true);
             dispatch.elementMouseover({
@@ -173,7 +201,7 @@ nv.models.multiBar = function() {
             d3.event.stopPropagation();
           });
       bars
-          .attr('class', function(d,i) { return getY(d,i) < 0 ? 'bar negative' : 'bar positive'})
+          .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
           .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
       if (stacked)
         d3.transition(bars)
@@ -203,7 +231,7 @@ nv.models.multiBar = function() {
                 .attr('y', function(d,i) {
                   return getY(d,i) < 0 ?
                     y(0) :
-                    y(getY(d,i)) 
+                    y(getY(d,i))
                 })
                 .attr('height', function(d,i) {
                   return Math.abs(y(getY(d,i)) - y(0))
@@ -213,11 +241,9 @@ nv.models.multiBar = function() {
 
 
       //TODO: decide if this makes sense to add into all the models for ease of updating (updating without needing the selection)
-      chart.update = function() {
-        selection.transition().call(chart);
-      }
+      chart.update = function() { chart(selection) };
 
-      //store old scales for use in transitions on update, to animate from old to new positions, and sizes
+      //store old scales for use in transitions on update
       x0 = x.copy();
       y0 = y.copy();
 
@@ -226,6 +252,10 @@ nv.models.multiBar = function() {
     return chart;
   }
 
+
+  //============================================================
+  // Global getters and setters
+  //------------------------------------------------------------
 
   chart.dispatch = dispatch;
 
@@ -303,14 +333,14 @@ nv.models.multiBar = function() {
 
   chart.color = function(_) {
     if (!arguments.length) return color;
-    color = _;
+    color = nv.utils.getColor(_);
     return chart;
   };
 
   chart.id = function(_) {
-        if (!arguments.length) return id;
-        id = _;
-        return chart;
+    if (!arguments.length) return id;
+    id = _;
+    return chart;
   };
 
   chart.delay = function(_) {

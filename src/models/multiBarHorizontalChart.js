@@ -3,20 +3,22 @@ nv.models.multiBarHorizontalChart = function() {
   var margin = {top: 30, right: 20, bottom: 50, left: 60},
       width = null,
       height = null,
-      color = d3.scale.category20().range(),
+      color = nv.utils.defaultColor(),
       showControls = true,
       showLegend = true,
       tooltips = true,
       tooltip = function(key, x, y, e, graph) { 
-        return '<h3>' + x + '</h3>' +
+        return '<h3>' + key + " - " + x + '</h3>' +
                '<p>' +  y + '</p>'
-      };
+      },
+      noData = "No Data Available."
+      ;
 
 
   var multibar = nv.models.multiBarHorizontal().stacked(false),
       x = multibar.xScale(),
       y = multibar.yScale(),
-      xAxis = nv.models.axis().scale(x).orient('left').highlightZero(false),
+      xAxis = nv.models.axis().scale(x).orient('left').highlightZero(false).showMaxMin(false),
       yAxis = nv.models.axis().scale(y).orient('bottom'),
       legend = nv.models.legend().height(30),
       controls = nv.models.legend().height(30),
@@ -28,8 +30,8 @@ nv.models.multiBarHorizontalChart = function() {
   var showTooltip = function(e, offsetElement) {
     var left = e.pos[0] + ( offsetElement.offsetLeft || 0 ),
         top = e.pos[1] + ( offsetElement.offsetTop || 0),
-        x = xAxis.tickFormat()(multibar.x()(e.point)),
-        y = yAxis.tickFormat()(multibar.y()(e.point)),
+        x = xAxis.tickFormat()(multibar.x()(e.point, e.pointIndex)),
+        y = yAxis.tickFormat()(multibar.y()(e.point, e.pointIndex)),
         content = tooltip(e.series.key, x, y, e, chart);
 
     nv.tooltip.show([left, top], content, e.value < 0 ? 'e' : 'w');
@@ -52,16 +54,34 @@ nv.models.multiBarHorizontalChart = function() {
                              - margin.top - margin.bottom;
 
 
+      //------------------------------------------------------------
+      // Display No Data message if there's nothing to show.
+
+      if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
+        container.append('text')
+          .attr('class', 'nvd3 nv-noData')
+          .attr('x', availableWidth / 2)
+          .attr('y', availableHeight / 2)
+          .attr('dy', '-.7em')
+          .style('text-anchor', 'middle')
+          .text(noData);
+          return chart;
+      } else {
+        container.select('.nv-noData').remove();
+      }
+
+      //------------------------------------------------------------
 
 
-      var wrap = container.selectAll('g.wrap.multiBarHorizontalChart').data([data]);
-      var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 multiBarHorizontalChart').append('g');
 
-      gEnter.append('g').attr('class', 'x axis');
-      gEnter.append('g').attr('class', 'y axis');
-      gEnter.append('g').attr('class', 'barsWrap');
-      gEnter.append('g').attr('class', 'legendWrap');
-      gEnter.append('g').attr('class', 'controlsWrap');
+      var wrap = container.selectAll('g.nv-wrap.nv-multiBarHorizontalChart').data([data]);
+      var gEnter = wrap.enter().append('g').attr('class', 'nvd3 nv-wrap nv-multiBarHorizontalChart').append('g');
+
+      gEnter.append('g').attr('class', 'nv-x nv-axis');
+      gEnter.append('g').attr('class', 'nv-y nv-axis');
+      gEnter.append('g').attr('class', 'nv-barsWrap');
+      gEnter.append('g').attr('class', 'nv-legendWrap');
+      gEnter.append('g').attr('class', 'nv-controlsWrap');
 
 
 
@@ -74,7 +94,7 @@ nv.models.multiBarHorizontalChart = function() {
       if (showLegend) {
         legend.width(availableWidth / 2);
 
-        g.select('.legendWrap')
+        g.select('.nv-legendWrap')
             .datum(data)
             .call(legend);
 
@@ -84,7 +104,7 @@ nv.models.multiBarHorizontalChart = function() {
                              - margin.top - margin.bottom;
         }
 
-        g.select('.legendWrap')
+        g.select('.nv-legendWrap')
             .attr('transform', 'translate(' + (availableWidth / 2) + ',' + (-margin.top) +')')
       }
 
@@ -93,14 +113,14 @@ nv.models.multiBarHorizontalChart = function() {
         .width(availableWidth)
         .height(availableHeight)
         .color(data.map(function(d,i) {
-          return d.color || color[i % color.length];
+          return d.color || color(d, i);
         }).filter(function(d,i) { return !data[i].disabled }))
 
 
 
       if (showControls) {
         controls.width(180).color(['#444', '#444', '#444']);
-        g.select('.controlsWrap')
+        g.select('.nv-controlsWrap')
             .datum(controlsData)
             .attr('transform', 'translate(0,' + (-margin.top) +')')
             .call(controls);
@@ -110,7 +130,7 @@ nv.models.multiBarHorizontalChart = function() {
       g.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 
-      var barsWrap = g.select('.barsWrap')
+      var barsWrap = g.select('.nv-barsWrap')
           .datum(data.filter(function(d) { return !d.disabled }))
 
 
@@ -122,28 +142,31 @@ nv.models.multiBarHorizontalChart = function() {
         .tickSize(-availableWidth, 0);
 
       //d3.transition(g.select('.x.axis'))
-      g.select('.x.axis').transition().duration(0)
+      g.select('.nv-x.nv-axis').transition().duration(0)
           .call(xAxis);
 
-      var xTicks = g.select('.x.axis').selectAll('g');
+      var xTicks = g.select('.nv-x.nv-axis').selectAll('g');
 
       xTicks
           .selectAll('line, text')
           .style('opacity', 1)
 
+          /*
+      //I think this was just leaft over from the multiBar chart this was built from.. commented to maek sure
       xTicks.filter(function(d,i) {
             return i % Math.ceil(data[0].values.length / (availableWidth / 100)) !== 0;
           })
           .selectAll('line, text')
           .style('opacity', 0)
+          */
 
       yAxis
         .ticks( availableWidth / 100 )
         .tickSize( -availableHeight, 0);
 
-      g.select('.y.axis')
+      g.select('.nv-y.nv-axis')
           .attr('transform', 'translate(0,' + availableHeight + ')');
-      d3.transition(g.select('.y.axis'))
+      d3.transition(g.select('.nv-y.nv-axis'))
       //g.select('.y.axis').transition().duration(0)
           .call(yAxis);
 
@@ -156,7 +179,7 @@ nv.models.multiBarHorizontalChart = function() {
         if (!data.filter(function(d) { return !d.disabled }).length) {
           data.map(function(d) {
             d.disabled = false;
-            wrap.selectAll('.series').classed('disabled', false);
+            wrap.selectAll('.nv-series').classed('disabled', false);
             return d;
           });
         }
@@ -199,6 +222,7 @@ nv.models.multiBarHorizontalChart = function() {
 
       //TODO: decide if this makes sense to add into all the models for ease of updating (updating without needing the selection)
       chart.update = function() { selection.transition().call(chart) };
+      chart.container = this; // I need a reference to the container in order to have outside code check if the chart is visible or not
 
     });
 
@@ -235,8 +259,8 @@ nv.models.multiBarHorizontalChart = function() {
 
   chart.color = function(_) {
     if (!arguments.length) return color;
-    color = _;
-    legend.color(_);
+    color = nv.utils.getColor(_);
+    legend.color(color);
     return chart;
   };
 
@@ -252,6 +276,12 @@ nv.models.multiBarHorizontalChart = function() {
     return chart;
   };
 
+  chart.tooltip = function(_) {
+    if (!arguments.length) return tooltip;
+    tooltip = _;
+    return chart;
+  };
+
   chart.tooltips = function(_) {
     if (!arguments.length) return tooltips;
     tooltips = _;
@@ -261,6 +291,12 @@ nv.models.multiBarHorizontalChart = function() {
   chart.tooltipContent = function(_) {
     if (!arguments.length) return tooltip;
     tooltip = _;
+    return chart;
+  };
+
+  chart.noData = function(_) {
+    if (!arguments.length) return noData;
+    noData = _;
     return chart;
   };
 

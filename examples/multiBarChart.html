@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 
-<link href="../src/d3.css" rel="stylesheet" type="text/css">
+<link href="../src/nv.d3.css" rel="stylesheet" type="text/css">
 
 <style>
 
@@ -35,6 +35,7 @@ text {
 <script src="../lib/d3.v2.js"></script>
 <script src="../nv.d3.js"></script>
 <script src="../src/tooltip.js"></script>
+<script src="../src/utils.js"></script>
 <script src="../src/models/legend.js"></script>
 <script src="../src/models/axis.js"></script>
 <script src="../src/models/multiBar.js"></script>
@@ -43,6 +44,7 @@ text {
 <script>
 
 var test_data = stream_layers(3,10+Math.random()*100,.1).map(function(data, i) {
+//var test_data = stream_layers(3,1,.1).map(function(data, i) { //for testing single data point
   return {
     key: 'Stream' + i,
     values: data

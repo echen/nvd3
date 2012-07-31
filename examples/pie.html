@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<link href="../src/d3.css" rel="stylesheet" type="text/css">
+<link href="../src/nv.d3.css" rel="stylesheet" type="text/css">
 <style>
 
 body {
@@ -16,6 +16,8 @@ text {
 
 <svg id="test1"></svg>
 
+<svg id="test2"></svg>
+
 <script src="../lib/d3.v2.js"></script>
 <script src="../nv.d3.js"></script>
 <script src="../src/models/pie.js"></script>
@@ -23,145 +25,67 @@ text {
 
   var testdata = [
     { 
-      label: "One",
+      key: "One",
       y: 5
     },
     { 
-      label: "Two",
+      key: "Two",
       y: 2
     },
     { 
-      label: "Three",
+      key: "Three",
       y: 9
     },
     { 
-      label: "Four",
+      key: "Four",
       y: 7
     },
     { 
-      label: "Five",
+      key: "Five",
       y: 4
     },
     {
-        label: "Six",
+        key: "Six",
         y: 3
     }
   ];
 
-  var testdata2 = [
-      {
-          label: "One",
-          y: 10
-      },
-      {
-          label: "Two",
-          y: 5
-      },
-      {
-          label: "Three",
-          y: 3
-      },
-      {
-          label: "Four",
-          y: 7
-      },
-      {
-          label: "Five",
-          y: 2
-      }
 
-  ];
-
-  var td = 0;
-  var a = (Math.random()*10)+1;
-  if (a > 5) td = 1;
-
-  //Format A
-nv.addGraph({
-  generate: function() {
+nv.addGraph(function() {
     var width = nv.utils.windowSize().width - 40,
-        height = nv.utils.windowSize().height - 40;
+        height = nv.utils.windowSize().height / 2 - 40;
 
+    var chart = nv.models.pie()
+        .width(width)
+        .height(height);
 
+    d3.select("#test1")
+        .datum(testdata)
+      .transition().duration(1200)
+        .attr('width', width)
+        .attr('height', height)
+        .call(chart);
+
+    return chart;
+});
+
+nv.addGraph(function() {
+    var width = nv.utils.windowSize().width - 40,
+        height = nv.utils.windowSize().height / 2 - 40;
 
     var chart = nv.models.pie()
         .width(width)
         .height(height)
-        .title('Hi this is the chart title')
-            ;
+        .donut(true);
 
-    if (td === 0) {
-    d3.select("#test1")
-      .attr('width', width)
-      .attr('height', height)
-      .datum(testdata)
-      .call(chart);
-    } else {
-        d3.select("#test1")
-                .attr('width', width)
-                .attr('height', height)
-                .datum(testdata2)
-                .call(chart);
-    }
-
-
-
-    return chart;
-  },
-  callback: function(graph) {
-
-      graph.dispatch.on('tooltipShow', function(e) {
-          var offsetElement = document.getElementById("chart"),
-                  left = e.pos[0],
-                  top = e.pos[1];
-
-          var content = '<h3>' + e.label + '</h3>' +
-                  '<p>' +
-                  e.value +
-                  '</p>';
-
-          nv.tooltip.show([left, top], content);
-      });
-
-      graph.dispatch.on('tooltipHide', function(e) {
-           nv.tooltip.cleanup();
-      });
-
-      graph.dispatch.on('chartClick', function(e) {
-          console.log('Click Switching to');
-         if (td === 0) {
-             d3.select("#test1")
-                     .datum(testdata2)
-                     .call(graph);
-             td = 1;
-
-         } else {
-          d3.select("#test1")
-                  .datum(testdata)
-                  .call(graph);
-             td = 0;
-         }
-      });
-
-      graph.dispatch.on('elementClick', function(e) { console.log("Clicked on Element",e); });
-      graph.dispatch.on('elementDblClick', function(e) { console.log("Double Clicked on Element",e); });
-      //graph.dispatch.on('chartClick', function(e) { console.log("Clicked on chart",e); });
-
-      window.onresize = function() {
-      var width = nv.utils.windowSize().width - 40,
-          height = nv.utils.windowSize().height - 40;
-
-      d3.select("#test1")
+    d3.select("#test2")
+        .datum(testdata)
+      .transition().duration(1200)
         .attr('width', width)
         .attr('height', height)
-        .call(
-          graph
-            .width(width)
-            .height(height)
-        )
-    };
-  }
-});
+        .call(chart);
 
+    return chart;
+});
 
 </script>
