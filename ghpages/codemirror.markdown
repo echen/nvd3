@@ -6,16 +6,26 @@ title: Simple Line Chart
 <link rel="stylesheet" href="../css/codemirror.css"></link>
 <link rel="stylesheet" href="../css/ambiance.css"></link>
 <style type="text/css">
+  .codemirror-controls {
+    list-style-type: none;
+  }
+
+  .codemirror-controls .status {
+    font-weight: bold;
+  }
+
   .CodeMirror {
     width: 100%;
     border: 1px solid #999;
-    margin: 30px 0;
+    margin: 0 0 30px 0;
   }
+
   .CodeMirror-scroll {
     height: auto;
     overflow-y: hidden;
     overflow-x: auto;
   }
+
   iframe {
     width: 100%;
     float: left;
@@ -33,6 +43,11 @@ title: Simple Line Chart
 </iframe>
 
 
+<ul class="codemirror-controls pull-right">
+  <li>
+    <a href="#" id="vim-mode">Vim mode: <span class="status">Off</span></a>
+  </li>
+</ul>
 
 <textarea id="code" name="code">
 &lt;!doctype html>
@@ -101,6 +116,7 @@ title: Simple Line Chart
 
 
 <script type="text/javascript" src="../js/lib/codemirror/codemirror.js"> </script>
+<script type="text/javascript" src="../js/lib/codemirror/keymap/vim.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/xml/xml.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/javascript/javascript.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/css/css.js"> </script>
@@ -111,12 +127,14 @@ title: Simple Line Chart
 
 <script>
   var delay;
-  // Initialize CodeMirror editor with a nice html5 canvas demo.
+
   var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
     mode: 'text/html',
     tabMode: 'indent',
     theme: 'ambiance',
     lineNumbers: true,
+    lineWrapping: true,
+    keyMap: 'default',
     onChange: function() {
       clearTimeout(delay);
       delay = setTimeout(updatePreview, 300);
@@ -131,5 +149,16 @@ title: Simple Line Chart
     preview.close();
   }
   setTimeout(updatePreview, 300);
+
+  var vimMode = false;
+
+  d3.select('#vim-mode')
+      .on('click', function() {
+        vimMode = !vimMode;
+        editor.setOption('keyMap', vimMode ? 'vim' : 'default');
+        d3.select(this).select('.status').text(vimMode ? 'On' : 'Off');
+        d3.event.preventDefault();
+      });
+
 </script>
 
