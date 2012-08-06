@@ -192,34 +192,37 @@ nv.models.scatterChart = function() {
       g.select('.nv-y.nv-axis')
           .call(yAxis);
 
-
-      distX
-          .scale(x)
-          .width(availableWidth)
-          .color(data.map(function(d,i) {
-            return d.color || color(d, i);
-          }).filter(function(d,i) { return !data[i].disabled }));
-      gEnter.select('.nv-distWrap').append('g')
-          .attr('class', 'nv-distributionX')
-          .attr('transform', 'translate(0,' + y.range()[0] + ')');
-      g.select('.nv-distributionX')
-          .datum(data.filter(function(d) { return !d.disabled }))
-          .call(distX);
-
-
-      distY
-          .scale(y)
-          .width(availableHeight)
-          .color(data.map(function(d,i) {
-            return d.color || color(d, i);
-          }).filter(function(d,i) { return !data[i].disabled }));
-      gEnter.select('.nv-distWrap').append('g')
-          .attr('class', 'nv-distributionY')
-          .attr('transform', 'translate(-' + distY.size() + ',0)');
-      g.select('.nv-distributionY')
-          .datum(data.filter(function(d) { return !d.disabled }))
-          .call(distY);
-
+      if(showDistX){
+	      distX
+	          .getData(scatter.x())
+	          .scale(x)
+	          .width(availableWidth)
+	          .color(data.map(function(d,i) {
+	            return d.color || color(d, i);
+	          }).filter(function(d,i) { return !data[i].disabled }));
+	      gEnter.select('.nv-distWrap').append('g')
+	          .attr('class', 'nv-distributionX')
+	          .attr('transform', 'translate(0,' + y.range()[0] + ')');
+	      g.select('.nv-distributionX')
+	          .datum(data.filter(function(d) { return !d.disabled }))
+	          .call(distX);
+	   }	
+	
+	   if(showDistY){
+	      distY
+	          .getData(scatter.y())
+	          .scale(y)
+	          .width(availableHeight)
+	          .color(data.map(function(d,i) {
+	            return d.color || color(d, i);
+	          }).filter(function(d,i) { return !data[i].disabled }));
+	      gEnter.select('.nv-distWrap').append('g')
+	          .attr('class', 'nv-distributionY')
+	          .attr('transform', 'translate(-' + distY.size() + ',0)');
+	      g.select('.nv-distributionY')
+	          .datum(data.filter(function(d) { return !d.disabled }))
+	          .call(distY);
+	  }
 
       g.select('.nv-background').on('mousemove', updateFisheye);
       g.select('.nv-background').on('click', function() { pauseFisheye = !pauseFisheye;});
@@ -364,7 +367,7 @@ nv.models.scatterChart = function() {
   chart.distX = distX;
   chart.distY = distY;
 
-  d3.rebind(chart, scatter, 'id', 'interactive', 'pointActive', 'shape', 'size', 'xScale', 'yScale', 'zScale', 'xDomain', 'yDomain', 'sizeDomain', 'forceX', 'forceY', 'forceSize', 'clipVoronoi', 'clipRadius');
+  d3.rebind(chart, scatter, 'id', 'interactive', 'pointActive', 'x', 'y', 'shape', 'size', 'xScale', 'yScale', 'zScale', 'xDomain', 'yDomain', 'sizeDomain', 'sizeRange', 'forceX', 'forceY', 'forceSize', 'clipVoronoi', 'clipRadius');
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
