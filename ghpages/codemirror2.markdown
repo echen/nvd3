@@ -19,13 +19,10 @@ title: Simple Line Chart
   }
 
   .CodeMirror {
-    min-height: 300px;
-    /*
     width: 100%;
     border: 1px solid #999;
     margin: 0 0 30px 0;
     overflow: auto;
-    */
   }
 
   .CodeMirror-scroll {
@@ -40,20 +37,16 @@ title: Simple Line Chart
   }
 
   #previewWrap {
-    /*
     position: absolute;
     right: 0;
     top: 40px;
     width: 100%;
-    */
   }
 
   #codeWrap {
-    /*
     position: absolute;
     left: 0;
     top: 40px;
-    */
     overflow: auto;
   }
 
@@ -70,21 +63,83 @@ title: Simple Line Chart
 
 <div class="span6" id="codeWrap">
 
-<ul class="nav nav-tabs" id="codeTabs">
-  <li class="active"><a href="#chartCode" data-toggle="tab">Chart Code (JavaScript)</a></li>
-  <li><a href="#chartData" data-toggle="tab">Data (JSON)</a></li>
-  <li><a href="#chartMarkup" data-toggle="tab">Markup (HTML/CSS)</a></li>
-</ul>
 
-<div class="tab-content" id="codeTabsContent">
-  <div class="tab-pane fade in active" id="chartCode">
-    <textarea id="code" name="code"> </textarea>
-  </div>
-  <div class="tab-pane fade in active" id="chartData">
-    <textarea id="codeData" name="codeData"> </textarea>
-  </div>
-  <div class="tab-pane fade in active" id="chartMarkup">
-    <textarea id="codeMarkup" name="codeMarkup"> </textarea>
+
+<div class="accordion" id="codeAccordian"> 
+  <div class="accordion-group"> 
+    <div class="accordion-heading"> 
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#codeAccordian" href="#collapseOne"> 
+        HTML / CSS Markup
+      </a> 
+    </div> 
+    <div id="collapseOne" class="accordion-body collapse in"> 
+      <div class="accordion-inner">
+<textarea id="codeMarkup" name="codeMarkup">
+&lt;div id="chart">
+  &lt;svg style="height:400px">&lt;/svg>
+&lt;/div>
+</textarea>
+      </div> 
+    </div> 
+  </div> 
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#codeAccordian" href="#collapseTwo">
+        JavaScript / Chart Code
+      </a>
+    </div>
+    <div id="collapseTwo" class="accordion-body collapse">
+      <div class="accordion-inner">
+
+<textarea id="code" name="code">
+nv.addGraph(function() {
+  var chart = nv.models.lineChart();
+
+  chart.xAxis
+      .axisLabel('Time (ms)')
+      .tickFormat(d3.format(',r'));
+
+  chart.yAxis
+      .axisLabel('Voltage (v)')
+      .tickFormat(d3.format('.02f'));
+
+  d3.select('#chart svg')
+      .datum(sinAndCos())
+    .transition().duration(500)
+      .call(chart);
+
+  nv.utils.windowResize(function() { d3.select('#chart svg').call(chart) });
+
+  return chart;
+});
+
+
+function sinAndCos() {
+  var sin = [],
+      cos = [];
+
+  for (var i = 0; i &lt; 100; i++) {
+    sin.push({x: i, y: Math.sin(i/10)});
+    cos.push({x: i, y: .5 * Math.cos(i/10)});
+  }
+
+  return [
+    {
+      values: sin,
+      key: 'Sine Wave',
+      color: '#ff7f0e'
+    },
+    {
+      values: cos,
+      key: 'Cosine Wave',
+      color: '#2ca02c'
+    }
+  ];
+}
+</textarea>
+
+      </div>
+    </div>
   </div>
 </div>
 
