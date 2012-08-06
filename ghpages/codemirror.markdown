@@ -5,6 +5,10 @@ title: Simple Line Chart
 
 <link rel="stylesheet" href="../css/codemirror.css"></link>
 <link rel="stylesheet" href="../css/eclipse.css"></link>
+
+<link rel="stylesheet" href="../css/inlet/Color.Picker.Classic.css"></link>
+<link rel="stylesheet" href="../css/inlet/jquery-ui-slider.css"></link>
+
 <style type="text/css">
   .container {
     position: relatove;
@@ -65,16 +69,47 @@ title: Simple Line Chart
 </style>
 
 
+
+<!--
+<div class="subnav navbar-fixed-top">
+  <ul class="nav nav-pills">
+    <li class="active"><a href="#">Simple Line Chart</a></li>
+    <li><a hre="#">Test</a></li>
+  </ul>
+</div>
+-->
+
+
+
+
 <div class="row-fluid">
+
+<div class="span6" id="previewWrap">
+
+<iframe id="preview">
+
+</iframe>
+
+</div>
 
 
 <div class="span6" id="codeWrap">
 
-<ul class="nav nav-tabs" id="codeTabs">
-  <li class="active"><a href="#chartCode" data-toggle="tab">Chart Code (JavaScript)</a></li>
-  <li><a href="#chartData" data-toggle="tab">Data (JSON)</a></li>
-  <li><a href="#chartMarkup" data-toggle="tab">Markup (HTML/CSS)</a></li>
-</ul>
+<div>
+  <ul class="nav nav-tabs" id="codeTabs">
+    <li class="active"><a href="#chartCode" data-toggle="tab">Chart Code (JavaScript)</a></li>
+    <li><a href="#chartData" data-toggle="tab">Data (JSON)</a></li>
+    <li><a href="#chartMarkup" data-toggle="tab">Markup (HTML/CSS)</a></li>
+    <!--
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">Settings</a>
+      <ul class="dropdown-menu">
+        <li><a href="#">Vim Mode</a></li>
+      </ul>
+    </li>
+    -->
+  </ul>
+</div>
 
 <div class="tab-content" id="codeTabsContent">
   <div class="tab-pane fade in active" id="chartCode">
@@ -102,14 +137,6 @@ title: Simple Line Chart
 
 
 
-<div class="span6" id="previewWrap">
-
-<iframe id="preview">
-
-</iframe>
-
-</div>
-
 
 
 </div>
@@ -122,6 +149,13 @@ title: Simple Line Chart
 <script type="text/javascript" src="../js/lib/codemirror/css/css.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/gfm/gfm.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/htmlmixed/htmlmixed.js"> </script>
+
+<script type="text/javascript" src="../js/lib/inlet/jquery-ui.1.8.16.custom.min.js"> </script>
+<script type="text/javascript" src="../js/lib/inlet/jquery.ui.slider.js"> </script>
+<script type="text/javascript" src="../js/lib/inlet/underscore-min.js"> </script>
+<script type="text/javascript" src="../js/lib/inlet/Color.Picker.Classic.js"> </script>
+<script type="text/javascript" src="../js/lib/inlet/Color.Space.js"> </script>
+<script type="text/javascript" src="../js/lib/inlet/inlet.js"> </script>
 
 
 

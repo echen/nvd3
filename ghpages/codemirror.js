@@ -47,19 +47,28 @@ var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
   }
 });
 
-d3.text('stackedAreaMarkup.html', function(text) {
-  editorMarkup.setValue(text);
-  d3.select('#chartMarkup').classed('active', false);
-})
 
-d3.text('stackedAreaData.json', function(text) {
-  editorData.setValue(text);
-  d3.select('#chartData').classed('active', false);
-})
+loadChart('stackedArea');
 
-d3.text('stackedAreaChart.js', function(text) {
-  editor.setValue(text);
-})
+
+function loadChart(chartName) {
+  d3.text(chartName + 'Markup.html', function(text) {
+    editorMarkup.setValue(text);
+    d3.select('#chartMarkup').classed('active', false);
+    //if (Inlet) Inlet(editorMarkup);
+  })
+
+  d3.text(chartName + 'Data.json', function(text) {
+    editorData.setValue(text);
+    //if (Inlet) Inlet(editorData);
+    d3.select('#chartData').classed('active', false);
+  })
+
+  d3.text(chartName + 'Chart.js', function(text) {
+    editor.setValue(text);
+    //if (Inlet) Inlet(editor);
+  })
+}
 
 
 function updatePreview() {
