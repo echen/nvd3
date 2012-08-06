@@ -215,7 +215,7 @@ title: Simple Line Chart
         </ul>
       </div>
 
-      <h3 class="pull-left" style="margin-top:4px;margin-left: 10px;" id="chartTitle">Stacked Area Chart</h3>
+      <h3 class="pull-left" style="margin-top:4px;margin-left: 10px;" id="chartTitle">Line Chart</h3>
 
       <ul class="nav nav-tabs pull-right" id="codeTabs">
         <li class="active"><a href="#chartCode" data-toggle="tab">Chart Code (JavaScript)</a></li>

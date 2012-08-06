@@ -48,7 +48,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
 });
 
 
-loadChart('stackedArea');
+loadChart('line');
 
 
 function loadChart(chartName) {
