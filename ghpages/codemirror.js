@@ -53,20 +53,37 @@ loadChart('line');
 
 function loadChart(chartName) {
   d3.text(chartName + 'Markup.html', function(text) {
+    d3.select('#chartMarkup').classed('active', true);
     editorMarkup.setValue(text);
-    d3.select('#chartMarkup').classed('active', false);
     //if (Inlet) Inlet(editorMarkup);
+    //d3.selectAll('#codeTabsContent .tab-pane.active').classed('active',false);
+    //d3.select(d3.select('#codeTabs .active a').attr('href'))
+        //.classed('active', false);
+    d3.select('#chartMarkup').classed('active',
+      d3.select('#codeTabs .active a').attr('href') == '#chartMarkup')
+
   })
 
   d3.text(chartName + 'Data.json', function(text) {
+    d3.select('#chartData').classed('active', true);
     editorData.setValue(text);
     //if (Inlet) Inlet(editorData);
-    d3.select('#chartData').classed('active', false);
+    //d3.selectAll('#codeTabsContent .tab-pane.active').classed('active',false);
+    //d3.select(d3.select('#codeTabs .active a').attr('href'))
+        //.classed('active', true);
+    d3.select('#chartData').classed('active',
+      d3.select('#codeTabs .active a').attr('href') == '#chartData')
   })
 
   d3.text(chartName + 'Chart.js', function(text) {
+    d3.select('#chartCode').classed('active', true);
     editor.setValue(text);
     //if (Inlet) Inlet(editor);
+    //d3.selectAll('#codeTabsContent .tab-pane.active').classed('active',false);
+    //d3.select(d3.select('#codeTabs .active a').attr('href'))
+        //.classed('active', true)
+    d3.select('#chartCode').classed('active',
+      d3.select('#codeTabs .active a').attr('href') == '#chartCode')
   })
 }
 
