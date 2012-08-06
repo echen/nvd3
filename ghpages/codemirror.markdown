@@ -204,17 +204,31 @@ title: Simple Line Chart
 
   <div class="subnav subnav-fixed">
     <div class="subnav-inner">
-      <h3 class="pull-left" style="margin-top:4px;margin-left: 10px;">Stacked Area Chart</h3>
-      <!--
-      <ul class="nav nav-pills pull-left">
-        <li><a href="#">Test</a></li>
-      </ul>
-      -->
+      <div class="btn-group pull-left" id="loadChart" style="margin:4px 4px 0 12px">
+        <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+          More Charts
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a href="#" data-chart="stackedArea">Stacked Area Chart</a></li>
+          <li><a href="#" data-chart="line">Line Chart</a></li>
+        </ul>
+      </div>
+
+      <h3 class="pull-left" style="margin-top:4px;margin-left: 10px;" id="chartTitle">Stacked Area Chart</h3>
+
       <ul class="nav nav-tabs pull-right" id="codeTabs">
         <li class="active"><a href="#chartCode" data-toggle="tab">Chart Code (JavaScript)</a></li>
         <li><a href="#chartData" data-toggle="tab">Data (JSON)</a></li>
         <li><a href="#chartMarkup" data-toggle="tab">Markup (HTML/CSS)</a></li>
       </ul>
+      <div id="codemirrorControls" class="pull-right" style="margin:4px 20px 0 8px;">
+        <div class="btn-group pull-right" data-toggle="buttons-radio">
+          <div class="btn btn-small active" id="keymap-default">Default</div>
+          <div class="btn btn-small" id="keymap-vim">VIM</div>
+          <div class="btn btn-small" id="keymap-emacs">Emacs</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -269,6 +283,7 @@ title: Simple Line Chart
 
 <script type="text/javascript" src="../js/lib/codemirror/codemirror.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/keymap/vim.js"> </script>
+<script type="text/javascript" src="../js/lib/codemirror/keymap/emacs.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/xml/xml.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/javascript/javascript.js"> </script>
 <script type="text/javascript" src="../js/lib/codemirror/css/css.js"> </script>

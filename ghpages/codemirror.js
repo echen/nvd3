@@ -71,6 +71,12 @@ function loadChart(chartName) {
 }
 
 
+$('#loadChart li > a').on('click', function() {
+  $('#chartTitle').text($(this).text())
+  loadChart($(this).data('chart'))
+});
+
+
 function updatePreview() {
   var previewFrame = document.getElementById('preview');
   var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
@@ -80,17 +86,16 @@ function updatePreview() {
 }
 setTimeout(updatePreview, 300);
 
-var vimMode = false;
 
-d3.select('#vim-mode')
-    .on('click', function() {
-      vimMode = !vimMode;
-      editor.setOption('keyMap', vimMode ? 'vim' : 'default');
-      editorData.setOption('keyMap', vimMode ? 'vim' : 'default');
-      editorMarkup.setOption('keyMap', vimMode ? 'vim' : 'default');
-      d3.select(this).select('.status').text(vimMode ? 'On' : 'Off');
-      d3.event.preventDefault();
-    });
+function setKeymap(mode) {
+  editor.setOption('keyMap', mode);
+  editorData.setOption('keyMap', mode);
+  editorMarkup.setOption('keyMap', mode);
+}
+
+d3.select('#keymap-default').on('click', function() { setKeymap('default') });
+d3.select('#keymap-vim').on('click', function() { setKeymap('vim') });
+d3.select('#keymap-emacs').on('click', function() { setKeymap('emacs') });
 
 
 /*
