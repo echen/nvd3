@@ -31,8 +31,10 @@
 
     <script type="text/javascript">
       // redirect to nvd3.com if accessed from novus.github.com/nvd3 so that disqus comments work automatically
+      /*
       if (window.location.hostname != 'nvd3.com' && window.location.hostname != 'localhost')
         window.location = 'http://nvd3.com' + window.location.pathname.replace('/nvd3','');
+        */
 
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-33058059-1']);
@@ -45,8 +47,7 @@
     </script>
   </head>
 
-  <!--<body>-->
-      <body data-spy="scroll" data-target=".subnav" data-offset="40"> 
+  <body>
 
 
     <div class="navbar navbar-fixed-top">
@@ -84,7 +85,7 @@
     <div>
 
     <script src="../js/lib/jquery.min.js"></script>
-    <script src="../js/lib/bootstrap.min.js"></script>
+    <script src="../js/lib/bootstrap.js"></script>
 
 
           {{ content }}
