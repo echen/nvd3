@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Simple Line Chart
+title: Live Code examples powered by CodeMirror
 ---
 
 <link rel="stylesheet" href="../css/codemirror.css"></link>
@@ -69,20 +69,6 @@ title: Simple Line Chart
 
 
 
-
-
-
-/* Specific jumbotrons
-------------------------- */
-/* supporting docs pages */
-.subhead {
-  padding-bottom: 0;
-  margin-bottom: 9px;
-}
-.subhead h1 {
-  font-size: 54px;
-}
-
 /* Subnav */
 .subnav {
   width: 100%;
@@ -104,49 +90,6 @@ title: Simple Line Chart
 .subnav .nav {
   margin-bottom: 0;
 }
-/*
-.subnav .nav > li > a {
-  margin: 0;
-  padding-top:    11px;
-  padding-bottom: 11px;
-  border-left: 1px solid #f5f5f5;
-  border-right: 1px solid #e5e5e5;
-  -webkit-border-radius: 0;
-     -moz-border-radius: 0;
-          border-radius: 0;
-}
-.subnav .nav > .active > a,
-.subnav .nav > .active > a:hover {
-  padding-left: 13px;
-  color: #777;
-  background-color: #e9e9e9;
-  border-right-color: #ddd;
-  border-left: 0;
-  -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,.05);
-     -moz-box-shadow: inset 0 3px 5px rgba(0,0,0,.05);
-          box-shadow: inset 0 3px 5px rgba(0,0,0,.05);
-}
-.subnav .nav > .active > a .caret,
-.subnav .nav > .active > a:hover .caret {
-  border-top-color: #777;
-}
-.subnav .nav > li:first-child > a,
-.subnav .nav > li:first-child > a:hover {
-  border-left: 0;
-  padding-left: 12px;
-  -webkit-border-radius: 4px 0 0 4px;
-     -moz-border-radius: 4px 0 0 4px;
-          border-radius: 4px 0 0 4px;
-}
-.subnav .nav > li:last-child > a {
-  border-right: 0;
-}
-.subnav .dropdown-menu {
-  -webkit-border-radius: 0 0 4px 4px;
-     -moz-border-radius: 0 0 4px 4px;
-          border-radius: 0 0 4px 4px;
-}
-*/
 
 .subnav-fixed {
   position: fixed;
@@ -183,20 +126,8 @@ title: Simple Line Chart
   margin: 2px auto 0;
 }
 
-
-
 </style>
 
-
-
-<!--
-<div class="subnav navbar-fixed-top">
-  <ul class="nav nav-pills">
-    <li class="active"><a href="#">Simple Line Chart</a></li>
-    <li><a hre="#">Test</a></li>
-  </ul>
-</div>
--->
 
 
 
@@ -255,9 +186,6 @@ title: Simple Line Chart
 
 <div class="span6" id="codeWrap">
 
-<div>
-</div>
-
 <div class="tab-content" id="codeTabsContent">
   <div class="tab-pane fade in active" id="chartCode">
     <textarea id="code" name="code"> </textarea>
@@ -271,18 +199,7 @@ title: Simple Line Chart
 </div>
 
 
-<!--
-<ul class="codemirror-controls pull-right">
-  <li>
-    <a href="#" id="vim-mode">Vim mode: <span class="status">Off</span></a>
-  </li>
-</ul>
--->
-
-
 </div>
-
-
 
 
 
@@ -304,7 +221,5 @@ title: Simple Line Chart
 <script type="text/javascript" src="../js/lib/inlet/Color.Picker.Classic.js"> </script>
 <script type="text/javascript" src="../js/lib/inlet/Color.Space.js"> </script>
 <script type="text/javascript" src="../js/lib/inlet/inlet.js"> </script>
-
-
 
 <script type="text/javascript" src="codemirror.js"> </script>
