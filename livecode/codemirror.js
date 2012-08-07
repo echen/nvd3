@@ -91,6 +91,7 @@ function loadChart(chartName) {
 $('#loadChart li > a').on('click', function() {
   $('#chartTitle').text($(this).text())
   loadChart($(this).data('chart'))
+  return false;
 });
 
 
