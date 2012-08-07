@@ -213,6 +213,7 @@ title: Simple Line Chart
           <li><a href="#" data-chart="line">Line Chart</a></li>
           <li><a href="#" data-chart="linePlusBar">Line Plus Bar Chart</a></li>
           <li><a href="#" data-chart="discreteBar">Discrete Bar Chart</a></li>
+          <li><a href="#" data-chart="multiBarHorizontal">Horizontal Grouped / Stacked Bar Chart</a></li>
           <li><a href="#" data-chart="multiBar">Grouped / Stacked Bar Chart</a></li>
           <li><a href="#" data-chart="scatter">Scatter / Bubble Chart</a></li>
           <li><a href="#" data-chart="stackedArea">Stacked Area Chart</a></li>
