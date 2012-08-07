@@ -210,8 +210,9 @@ title: Simple Line Chart
           <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-          <li><a href="#" data-chart="stackedArea">Stacked Area Chart</a></li>
           <li><a href="#" data-chart="line">Line Chart</a></li>
+          <li><a href="#" data-chart="discreteBar">Discrete Bar Chart</a></li>
+          <li><a href="#" data-chart="stackedArea">Stacked Area Chart</a></li>
         </ul>
       </div>
 
