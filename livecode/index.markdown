@@ -211,6 +211,7 @@ title: Simple Line Chart
         </a>
         <ul class="dropdown-menu">
           <li><a href="#" data-chart="line">Line Chart</a></li>
+          <li><a href="#" data-chart="cumulativeLine">Cumulative Line Chart</a></li>
           <li><a href="#" data-chart="linePlusBar">Line Plus Bar Chart</a></li>
           <li><a href="#" data-chart="discreteBar">Discrete Bar Chart</a></li>
           <li><a href="#" data-chart="multiBarHorizontal">Horizontal Grouped / Stacked Bar Chart</a></li>
