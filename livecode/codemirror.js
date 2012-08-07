@@ -88,10 +88,10 @@ function loadChart(chartName) {
 }
 
 
-$('#loadChart li > a').on('click', function() {
+$('#loadChart li > a').on('click', function(e) {
   $('#chartTitle').text($(this).text())
   loadChart($(this).data('chart'))
-  return false;
+  e.preventDefault();
 });
 
 
