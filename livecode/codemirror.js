@@ -1,6 +1,6 @@
 
 
-var preMarkup = '<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../src/nv.d3.css"><script type="text/javascript" src="../lib/d3.v2.js"></script><script type="text/javascript" src="../nv.d3.js"></script></head><body>';
+var preMarkup = '<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../src/nv.d3.css"><script type="text/javascript" src="../lib/d3.v2.js"></script><script type="text/javascript" src="../lib/fisheye.js"></script><script type="text/javascript" src="../nv.d3.js"></script></head><body>';
 var midMarkup = '<script>var data = ';
 var midMarkup2 = ';';
 var postMarkup = '</script></body></html>';
