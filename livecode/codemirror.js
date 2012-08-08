@@ -150,6 +150,7 @@ $(document).ready(function() {
     // fix sub nav on scroll
     var $win = $(window)
       , $nav = $('#codemirrorNav')
+      , $wrap = $('#codemirrorWrap')
       , $preview = $('#preview')
       , navTop = $('#codemirrorNav').length && $('#codemirrorNav').offset().top - 40
       , isFixed = 0
@@ -170,10 +171,12 @@ $(document).ready(function() {
       if (scrollTop >= navTop && !isFixed) {
         isFixed = 1
         $nav.addClass('subnav-fixed')
+        $wrap.addClass('wrap-fixed')
         $preview.addClass('preview-fixed')
       } else if (scrollTop <= navTop && isFixed) {
         isFixed = 0
         $nav.removeClass('subnav-fixed')
+        $wrap.removeClass('wrap-fixed')
         $preview.removeClass('preview-fixed')
       }
     }

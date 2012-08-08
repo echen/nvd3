@@ -78,6 +78,10 @@ title: Live Code examples powered by CodeMirror
 
   #codemirrorWrap {
     min-height: 800px;
+    padding-top: 40px;
+  }
+
+  #codemirrorWrap.wrap-fixed {
     padding-top: 80px;
   }
 
