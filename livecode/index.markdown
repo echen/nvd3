@@ -61,6 +61,14 @@ title: Live Code examples powered by CodeMirror
     overflow: auto;
   }
 
+  #codemirrorNav .toTop {
+    visibility: hidden;
+  }
+
+  #codemirrorNav.subnav-fixed .toTop {
+    visibility: visible;
+  }
+
   #preview {
     width: 100%;
     height: 500px;
@@ -241,6 +249,7 @@ title: Live Code examples powered by CodeMirror
       </div>
       -->
 
+      <a href="#" class="toTop pull-left" style="margin-top:8px;margin-left:4px;"><i class="icon-arrow-up"> </i></a>
       <h3 class="pull-left" style="margin-top:4px;margin-left: 10px;" id="chartTitle">Line Chart</h3>
 
       <ul class="nav nav-tabs pull-right" id="codeTabs">
