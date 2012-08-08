@@ -94,6 +94,12 @@ $('#loadChart li > a').on('click', function(e) {
   e.preventDefault();
 });
 
+$('.thumbnails li > a').on('click', function(e) {
+  $('#chartTitle').text($(this).data('charttitle'));
+  loadChart($(this).data('chart'))
+  //e.preventDefault();
+});
+
 
 function updatePreview() {
   var previewFrame = document.getElementById('preview');
@@ -136,3 +142,51 @@ function resizeEditor() {
 
 }
 */
+
+
+$(document).ready(function() {
+
+  setTimeout(function() {
+    // fix sub nav on scroll
+    var $win = $(window)
+      , $nav = $('#codemirrorNav')
+      , $preview = $('#preview')
+      , navTop = $('#codemirrorNav').length && $('#codemirrorNav').offset().top - 40
+      , isFixed = 0
+
+    processScroll()
+
+    /*
+    // hack sad times - holdover until rewrite for 2.1
+    $nav.on('click', function () {
+      if (!isFixed) setTimeout(function () {  $win.scrollTop($win.scrollTop() - 47) }, 10)
+    })
+   */
+
+    $win.on('scroll', processScroll)
+
+    function processScroll() {
+      var i, scrollTop = $win.scrollTop()
+      if (scrollTop >= navTop && !isFixed) {
+        isFixed = 1
+        $nav.addClass('subnav-fixed')
+        $preview.addClass('preview-fixed')
+      } else if (scrollTop <= navTop && isFixed) {
+        isFixed = 0
+        $nav.removeClass('subnav-fixed')
+        $preview.removeClass('preview-fixed')
+      }
+    }
+  }, 1000);
+
+
+  fixCodemirrorHeight();
+  $(window).resize(fixCodemirrorHeight);
+
+  function fixCodemirrorHeight() {
+    var h = $(window).height() - 120;
+
+    $('#codemirrorWrap').css('min-height', h + 'px');
+  }
+
+});

@@ -61,12 +61,24 @@ title: Live Code examples powered by CodeMirror
     overflow: auto;
   }
 
-  iframe {
+  #preview {
     width: 100%;
-    height: 420px;
+    height: 500px;
     border-width: 0;
   }
 
+
+  #codemirrorWrap {
+    min-height: 800px;
+    padding-top: 80px;
+  }
+
+  #preview.preview-fixed {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 48.75%;
+  }
 
 
 /* Subnav */
@@ -129,13 +141,87 @@ title: Live Code examples powered by CodeMirror
 </style>
 
 
+<div class="container">
+
+  <div class="page-header">
+    <h1>Chart Models <small>click to load an editable example</small></h1>
+  </div>
+
+  <ul class="thumbnails">
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="line" data-charttitle="Line Chart">
+        <img src="../img/line.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="scatter" data-charttitle="Scatter / Bubble Chart">
+        <img src="../img/scatter.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="stackedArea" data-charttitle="Stacked Area Chart">
+        <img src="../img/stackedarea.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="discreteBar" data-charttitle="Discrete Bar Chart">
+        <img src="../img/discretebar.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="multiBar" data-charttitle="Group / Stacked Bar Chart">
+        <img src="../img/stackedbar.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="multiBarHorizontal" data-charttitle="Horizontal Grouped / Stacked Bar Chart">
+        <img src="../img/horizontalbar.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="linePlusBar" data-charttitle="Line Plus Bar Chart">
+        <img src="../img/lineplusbar.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="cumulativeLine" data-charttitle="Cumulative Line Chart">
+        <img src="../img/cumulativeline.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="lineWithFocus" data-charttitle="Line with View Finder Chart">
+        <img src="../img/linewithfocus.png">
+      </a>
+    </li>
+
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="pie" data-charttitle="Pie Chart">
+        <img src="../img/pie.png">
+      </a>
+    </li>
+
+  </ul>
 
 
-<div class="container" style="height:20px">
+</div>
 
-  <div class="subnav subnav-fixed">
-    <div class="subnav-inner">
-      <div class="btn-group pull-left" id="loadChart" style="margin:4px 4px 0 12px">
+
+
+<div class="container" style="margin-top: 50px;">
+
+  <div class="subnav" id="codemirrorNav">
+    <div class="subnav-inner container">
+      <!--
+      <div class="btn-group pull-left" id="loadChart" style="margin:4px 4px 0 2px">
         <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
           More Charts
           <span class="caret"></span>
@@ -153,6 +239,7 @@ title: Live Code examples powered by CodeMirror
           <li><a href="#" data-chart="stackedArea">Stacked Area Chart</a></li>
         </ul>
       </div>
+      -->
 
       <h3 class="pull-left" style="margin-top:4px;margin-left: 10px;" id="chartTitle">Line Chart</h3>
 
@@ -173,7 +260,7 @@ title: Live Code examples powered by CodeMirror
 
 </div>
 
-<div class="row-fluid">
+<div class="row-fluid" id="codemirrorWrap">
 
 <div class="span6" id="previewWrap">
 
