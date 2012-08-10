@@ -226,6 +226,12 @@ title: Live Code examples powered by CodeMirror
       </a>
     </li>
 
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="indentedtree" data-charttitle="HTML Indented Tree">
+        <img src="../img/htmlindentedtree.png">
+      </a>
+    </li>
+
   </ul>
 
 
