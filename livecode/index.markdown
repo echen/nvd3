@@ -221,6 +221,12 @@ title: Live Code examples powered by CodeMirror
       </a>
     </li>
 
+    <li class="span3">
+      <a href="#codemirrorNav" class="thumbnail" data-chart="bullet" data-charttitle="Bullet Chart">
+        <img src="../img/bullet.png">
+      </a>
+    </li>
+
   </ul>
 
 
