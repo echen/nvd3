@@ -75,14 +75,13 @@ title: Live Code examples powered by CodeMirror
     border-width: 0;
   }
 
-
   #codemirrorWrap {
     min-height: 800px;
-    padding-top: 40px;
+    padding-top: 20px;
   }
 
   #codemirrorWrap.wrap-fixed {
-    padding-top: 80px;
+    padding-top: 60px;
   }
 
   #preview.preview-fixed {
