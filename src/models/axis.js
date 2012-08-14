@@ -7,8 +7,9 @@ nv.models.axis = function() {
       showMaxMin = true, //TODO: showMaxMin should be disabled on all ordinal scaled axes
       highlightZero = true,
       rotateLabels = 0,
-      rotateYLabel = true;
-      margin = {top: 0, right: 0, bottom: 0, left: 0}
+      rotateYLabel = true,
+      margin = {top: 0, right: 0, bottom: 0, left: 0},
+      ticks = null;
 
   var axis = d3.svg.axis()
                .scale(scale)
@@ -25,8 +26,11 @@ nv.models.axis = function() {
       var gEnter = wrapEnter.append('g');
       var g = wrap.select('g')
 
-      if (axis.orient() == 'top' || axis.orient() == 'bottom')
+      if (ticks !== null) {
+        axis.ticks(ticks);
+      } else if (axis.orient() == 'top' || axis.orient() == 'bottom') {
         axis.ticks(Math.abs(scale.range()[1] - scale.range()[0]) / 100);
+      }
 
       //TODO: consider calculating width/height based on whether or not label is added, for reference in charts using this component
 
@@ -235,12 +239,18 @@ nv.models.axis = function() {
   }
 
 
-  d3.rebind(chart, axis, 'orient', 'ticks', 'tickValues', 'tickSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  d3.rebind(chart, axis, 'orient', 'tickValues', 'tickSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
   d3.rebind(chart, scale, 'domain', 'range', 'rangeBand', 'rangeBands'); //these are also accessible by chart.scale(), but added common ones directly for ease of use
 
   chart.width = function(_) {
     if (!arguments.length) return width;
     width = _;
+    return chart;
+  };
+
+  chart.ticks = function(_) {
+    if (!arguments.length) return ticks;
+    ticks = _;
     return chart;
   };
 

@@ -267,7 +267,7 @@ nv.utils.getColor = function(color){
 //
 nv.utils.defaultColor = function(){
     var colors = d3.scale.category20().range();
-    return function(d, i) {return colors[i % colors.length]};
+    return function(d, i) { return d.color || colors[i % colors.length] };
 }
 
 
@@ -304,8 +304,9 @@ nv.models.axis = function() {
       showMaxMin = true, //TODO: showMaxMin should be disabled on all ordinal scaled axes
       highlightZero = true,
       rotateLabels = 0,
-      rotateYLabel = true;
-      margin = {top: 0, right: 0, bottom: 0, left: 0}
+      rotateYLabel = true,
+      margin = {top: 0, right: 0, bottom: 0, left: 0},
+      ticks = null;
 
   var axis = d3.svg.axis()
                .scale(scale)
@@ -322,8 +323,11 @@ nv.models.axis = function() {
       var gEnter = wrapEnter.append('g');
       var g = wrap.select('g')
 
-      if (axis.orient() == 'top' || axis.orient() == 'bottom')
+      if (ticks !== null) {
+        axis.ticks(ticks);
+      } else if (axis.orient() == 'top' || axis.orient() == 'bottom') {
         axis.ticks(Math.abs(scale.range()[1] - scale.range()[0]) / 100);
+      }
 
       //TODO: consider calculating width/height based on whether or not label is added, for reference in charts using this component
 
@@ -532,12 +536,18 @@ nv.models.axis = function() {
   }
 
 
-  d3.rebind(chart, axis, 'orient', 'ticks', 'tickValues', 'tickSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  d3.rebind(chart, axis, 'orient', 'tickValues', 'tickSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
   d3.rebind(chart, scale, 'domain', 'range', 'rangeBand', 'rangeBands'); //these are also accessible by chart.scale(), but added common ones directly for ease of use
 
   chart.width = function(_) {
     if (!arguments.length) return width;
     width = _;
+    return chart;
+  };
+
+  chart.ticks = function(_) {
+    if (!arguments.length) return ticks;
+    ticks = _;
     return chart;
   };
 
@@ -6968,6 +6978,7 @@ nv.models.scatter = function() {
    ,  sizeRange   = null
    ,  singlePoint = false
    ,  dispatch    = d3.dispatch('elementClick', 'elementMouseover', 'elementMouseout')
+   ,  useVoronoi  = true
    ;
 
   //============================================================
@@ -6998,8 +7009,6 @@ nv.models.scatter = function() {
         });
         return series;
       });
-
-
 
       //------------------------------------------------------------
       // Setup Scales
@@ -7071,11 +7080,11 @@ nv.models.scatter = function() {
       g   .attr('clip-path', clipEdge ? 'url(#nv-edge-clip-' + id + ')' : '');
 
 
-
       function updateInteractiveLayer() {
 
         if (!interactive) return false;
 
+        var eventElements;
 
         var vertices = d3.merge(data.map(function(group, groupIndex) {
             return group.values
@@ -7107,22 +7116,44 @@ nv.models.scatter = function() {
 
 
         //inject series and point index for reference into voronoi
-        var voronoi = d3.geom.voronoi(vertices).map(function(d, i) {
-            return {
-              'data': d,
-              'series': vertices[i][2],
-              'point': vertices[i][3]
-            }
-          });
+        if (useVoronoi === true) {
+          var voronoi = d3.geom.voronoi(vertices).map(function(d, i) {
+              return {
+                'data': d,
+                'series': vertices[i][2],
+                'point': vertices[i][3]
+              }
+            });
 
 
-        var pointPaths = wrap.select('.nv-point-paths').selectAll('path')
-            .data(voronoi);
-        pointPaths.enter().append('path')
-            .attr('class', function(d,i) { return 'nv-path-'+i; });
-        pointPaths.exit().remove();
-        pointPaths
-            .attr('d', function(d) { return 'M' + d.data.join(',') + 'Z'; })
+          var pointPaths = wrap.select('.nv-point-paths').selectAll('path')
+              .data(voronoi);
+          pointPaths.enter().append('path')
+              .attr('class', function(d,i) { return 'nv-path-'+i; });
+          pointPaths.exit().remove();
+          pointPaths
+              .attr('d', function(d) { return 'M' + d.data.join(',') + 'Z'; });
+
+          eventElements = pointPaths;
+
+        } else {
+          // bring data in form needed for click handlers
+          var dataWithPoints = vertices.map(function(d, i) {
+              return {
+                'data': d,
+                'series': vertices[i][2],
+                'point': vertices[i][3]
+              }
+            });
+
+          // add event handlers to points instead voronoi paths
+          eventElements = wrap.select('.nv-groups').selectAll('.nv-group')
+            .selectAll('path.nv-point')
+            .data(dataWithPoints)
+            .style('pointer-events', 'auto'); // recativate events, disabled by css
+        }
+
+        eventElements
             .on('click', function(d) {
               var series = data[d.series],
                   point  = series.values[d.point];
@@ -7322,7 +7353,7 @@ nv.models.scatter = function() {
     sizeDomain = _;
     return chart;
   };
-  
+
   chart.sizeRange = function(_) {
     if (!arguments.length) return sizeRange;
     sizeRange = _;
@@ -7368,6 +7399,15 @@ nv.models.scatter = function() {
   chart.clipVoronoi= function(_) {
     if (!arguments.length) return clipVoronoi;
     clipVoronoi = _;
+    return chart;
+  };
+
+  chart.useVoronoi= function(_) {
+    if (!arguments.length) return useVoronoi;
+    useVoronoi = _;
+    if (useVoronoi === false) {
+        clipVoronoi = false;
+    }
     return chart;
   };
 
@@ -7584,7 +7624,7 @@ nv.models.scatterChart = function() {
 
       xAxis
           .scale(x)
-          .ticks( availableWidth / 100 )
+          .ticks( xAxis.ticks() ? xAxis.ticks() : availableWidth / 100 )
           .tickSize( -availableHeight , 0);
 
       g.select('.nv-x.nv-axis')
@@ -7594,7 +7634,7 @@ nv.models.scatterChart = function() {
 
       yAxis
           .scale(y)
-          .ticks( availableHeight / 36 )
+          .ticks( yAxis.ticks() ? yAxis.ticks() : availableHeight / 36 )
           .tickSize( -availableWidth, 0);
 
       g.select('.nv-y.nv-axis')
@@ -7614,8 +7654,8 @@ nv.models.scatterChart = function() {
 	      g.select('.nv-distributionX')
 	          .datum(data.filter(function(d) { return !d.disabled }))
 	          .call(distX);
-	   }	
-	
+	   }
+
 	   if(showDistY){
 	      distY
 	          .getData(scatter.y())
@@ -7775,7 +7815,7 @@ nv.models.scatterChart = function() {
   chart.distX = distX;
   chart.distY = distY;
 
-  d3.rebind(chart, scatter, 'id', 'interactive', 'pointActive', 'x', 'y', 'shape', 'size', 'xScale', 'yScale', 'zScale', 'xDomain', 'yDomain', 'sizeDomain', 'sizeRange', 'forceX', 'forceY', 'forceSize', 'clipVoronoi', 'clipRadius');
+  d3.rebind(chart, scatter, 'id', 'interactive', 'pointActive', 'x', 'y', 'shape', 'size', 'xScale', 'yScale', 'zScale', 'xDomain', 'yDomain', 'sizeDomain', 'sizeRange', 'forceX', 'forceY', 'forceSize', 'clipVoronoi', 'clipRadius', 'useVoronoi');
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
