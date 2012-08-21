@@ -12,10 +12,10 @@ nv.addGraph(function() {
         return d3.time.format('%x')(new Date(dx))
       });
 
-    chart.yAxis1
+    chart.y1Axis
         .tickFormat(d3.format(',f'));
 
-    chart.yAxis2
+    chart.y2Axis
         .tickFormat(function(d) { return '$' + d3.format(',f')(d) });
 
     chart.bars.forceY([0]);
