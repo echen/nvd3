@@ -7,7 +7,6 @@ _site
 # Random Files #
 ################
 *.swp
-*~
 *.log
 
 
@@ -22,3 +21,9 @@ _site
 ehthumbs.db
 Icon?
 Thumbs.db
+
+
+# Editor backup files #
+#######################
+*.bak
+*~
