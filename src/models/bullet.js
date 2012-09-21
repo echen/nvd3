@@ -15,6 +15,7 @@ nv.models.bullet = function() {
     , ranges = function(d) { return d.ranges }
     , markers = function(d) { return d.markers }
     , measures = function(d) { return d.measures }
+    , forceX = [0] // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
     , width = 380
     , height = 30
     , tickFormat = null
@@ -28,7 +29,9 @@ nv.models.bullet = function() {
     selection.each(function(d, i) {
       var availableWidth = width - margin.left - margin.right,
           availableHeight = height - margin.top - margin.bottom,
-          container = d3.select(this);
+          container = d3.select(this),
+          mainGroup = this.parentNode.parentNode.getAttribute('transform')
+          heightFromTop = parseInt(mainGroup.replace(/.*,(\d+)\)/,"$1")) //TODO: There should be a smarter way to get this value
 
       var rangez = ranges.call(this, d, i).slice().sort(d3.descending),
           markerz = markers.call(this, d, i).slice().sort(d3.descending),
@@ -39,8 +42,9 @@ nv.models.bullet = function() {
       // Setup Scales
 
       // Compute the new x-scale.
+      var MaxX = Math.max(rangez[0] ? rangez[0]:0 , markerz[0] ? markerz[0] : 0 , measurez[0] ? measurez[0] : 0)
       var x1 = d3.scale.linear()
-          .domain([0, Math.max(rangez[0], markerz[0], measurez[0])])  // TODO: need to allow forceX and forceY, and xDomain, yDomain
+          .domain([0, MaxX]).nice()  // TODO: need to allow forceX and forceY, and xDomain, yDomain
           .range(reverse ? [availableWidth, 0] : [0, availableWidth]);
 
       // Retrieve the old x-scale, if this is an update.
@@ -85,7 +89,7 @@ nv.models.bullet = function() {
               dispatch.elementMouseover({
                 value: d,
                 label: (i <= 0) ? 'Maximum' : (i > 1) ? 'Minimum' : 'Mean', //TODO: make these labels a variable
-                pos: [x1(d), availableHeight/2]
+                pos: [x1(d), heightFromTop]
               })
           })
           .on('mouseout', function(d,i) { 
@@ -115,7 +119,7 @@ nv.models.bullet = function() {
               dispatch.elementMouseover({
                 value: d,
                 label: 'Current', //TODO: make these labels a variable
-                pos: [x1(d), availableHeight/2]
+                pos: [x1(d), heightFromTop]
               })
           })
           .on('mouseout', function(d) { 
@@ -146,7 +150,7 @@ nv.models.bullet = function() {
               dispatch.elementMouseover({
                 value: d,
                 label: 'Previous',
-                pos: [x1(d), availableHeight/2]
+                pos: [x1(d), heightFromTop]
               })
           })
           .on('mouseout', function(d,i) {
@@ -201,6 +205,12 @@ nv.models.bullet = function() {
   chart.measures = function(_) {
     if (!arguments.length) return measures;
     measures = _;
+    return chart;
+  };
+
+  chart.forceX = function(_) {
+    if (!arguments.length) return forceX;
+    forceX = _;
     return chart;
   };
 
