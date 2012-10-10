@@ -323,7 +323,7 @@ nv.models.axis = function() {
 
   var axis = d3.svg.axis()
                .scale(scale)
-               .orient('bottom')               
+               .orient('bottom')
     , scale0;
 
   //============================================================
@@ -361,7 +361,7 @@ nv.models.axis = function() {
 
       var fmt = axis.tickFormat();
       if (fmt == null) {
-        fmt = scale0.tickFormat();    
+        fmt = scale0.tickFormat();
       }
 
       var axisLabel = g.selectAll('text.nv-axislabel')
@@ -389,7 +389,7 @@ nv.models.axis = function() {
                 .attr('y', -axis.tickPadding())
                 .attr('text-anchor', 'middle')
                 .text(function(d,i) {
-		  var v = fmt(d);
+                  var v = fmt(d);
                   return ('' + v).match('NaN') ? '' : v;
                 });
             d3.transition(axisMaxMin)
@@ -399,25 +399,26 @@ nv.models.axis = function() {
           }
           break;
         case 'bottom':
-        var xLabelMargin = 30;
-        var maxTextWidth = 30;
-        if(rotateLabels%360){
-          var xTicks = g.selectAll('g').select("text");
-          //Calculate the longest xTick width
-          xTicks.each(function(d,i){
-            var width = this.getBBox().width;
-            if(width > maxTextWidth) maxTextWidth = width;
-          });
-          //Convert to radians before calculating sin. Add 30 to margin for healthy padding.
-          var sin = Math.abs(Math.sin(rotateLabels*Math.PI/180));
-          var xLabelMargin = (sin ? sin*maxTextWidth : maxTextWidth)+30;
-          //Rotate all xTicks
-          xTicks.attr('transform', function(d,i,j) { return 'rotate(' + rotateLabels + ' 0,0)' })
-          .attr('text-anchor', rotateLabels%360 > 0 ? 'start' : 'end');
-        }
-        axisLabel.enter().append('text').attr('class', 'nv-axislabel')
-              .attr('text-anchor', 'middle')
-              .attr('y', xLabelMargin);
+          var xLabelMargin = 30;
+          var maxTextWidth = 30;
+          if (rotateLabels%360) {
+            var xTicks = g.selectAll('g').select("text");
+            //Calculate the longest xTick width
+            xTicks.each(function(d,i){
+              var width = this.getBBox().width;
+              if(width > maxTextWidth) maxTextWidth = width;
+            });
+            //Convert to radians before calculating sin. Add 30 to margin for healthy padding.
+            var sin = Math.abs(Math.sin(rotateLabels*Math.PI/180));
+            var xLabelMargin = (sin ? sin*maxTextWidth : maxTextWidth)+30;
+            //Rotate all xTicks
+            xTicks
+              .attr('transform', function(d,i,j) { return 'rotate(' + rotateLabels + ' 0,0)' })
+              .attr('text-anchor', rotateLabels%360 > 0 ? 'start' : 'end');
+          }
+          axisLabel.enter().append('text').attr('class', 'nv-axislabel')
+            .attr('text-anchor', 'middle')
+            .attr('y', xLabelMargin);
           var w = (scale.range().length==2) ? scale.range()[1] : (scale.range()[scale.range().length-1]+(scale.range()[1]-scale.range()[0]));
           axisLabel
               .attr('x', w/2);
@@ -748,8 +749,7 @@ nv.models.historicalBar = function() {
 
 
       var barsEnter = bars.enter().append('rect')
-          .attr('class', function(d,i,j) { return (getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive') + ' nv-bar-' + j + '-' + i })
-          .attr('fill', function(d,i) { return color(d, i); })
+          //.attr('class', function(d,i,j) { return (getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive') + ' nv-bar-' + j + '-' + i })
           .attr('x', 0 )
           .attr('y', function(d,i) {  return y(Math.max(0, getY(d,i))) })
           .attr('height', function(d,i) { return Math.abs(y(getY(d,i)) - y(0)) })
@@ -801,6 +801,7 @@ nv.models.historicalBar = function() {
           });
 
       bars
+          .attr('fill', function(d,i) { return color(d, i); })
           .attr('class', function(d,i,j) { return (getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive') + ' nv-bar-' + j + '-' + i })
           .attr('transform', function(d,i) { return 'translate(' + (x(getX(d,i)) - ((availableWidth / data[0].values.length) * .5)) + ',0)'; })  //TODO: better width calculations that don't assume always uniform data spacing;w
           .attr('width', (availableWidth / data[0].values.length) * .9 )
@@ -5203,7 +5204,7 @@ nv.models.multiBarChart = function() {
     , controls = nv.models.legend()
     ;
 
-  var margin = {top: 30, right: 20, bottom: 50, left: 60}
+  var margin = {top: 30, right: 20, bottom: 30, left: 60}
     , width = null
     , height = null
     , color = nv.utils.defaultColor()
@@ -7855,11 +7856,13 @@ nv.models.scatter = function() {
 
         var vertices = d3.merge(data.map(function(group, groupIndex) {
             return group.values
-              .filter(pointActive) // remove non-interactive points
               .map(function(point, pointIndex) {
                 // *Adding noise to make duplicates very unlikely
                 // **Injecting series and point index for reference
-                return [x(getX(point,pointIndex)) * (Math.random() / 1e12 + 1)  , y(getY(point,pointIndex)) * (Math.random() / 1e12 + 1), groupIndex, pointIndex]; //temp hack to add noise untill I think of a better way so there are no duplicates
+                return [x(getX(point,pointIndex)) * (Math.random() / 1e12 + 1)  , y(getY(point,pointIndex)) * (Math.random() / 1e12 + 1), groupIndex, pointIndex, point]; //temp hack to add noise untill I think of a better way so there are no duplicates
+              })
+              .filter(function(pointArray, pointIndex) {
+                return pointActive(pointArray[4], pointIndex); // Issue #237.. move filter to after map, so pointIndex is correct!
               })
           })
         );
@@ -9528,6 +9531,12 @@ nv.models.stackedAreaChart = function() {
   yAxis
     .orient('left')
     ;
+  stacked.scatter
+    .pointActive(function(d) {
+      //console.log(stacked.y()(d), !!Math.round(stacked.y()(d) * 100));
+      return !!Math.round(stacked.y()(d) * 100);
+    })
+    ;
 
   //============================================================
 
@@ -9616,7 +9625,7 @@ nv.models.stackedAreaChart = function() {
 
       if (showLegend) {
         legend
-          .width( availableWidth / 2 );
+          .width( availableWidth * 2 / 3 );
 
         g.select('.nv-legendWrap')
             .datum(data)
@@ -9629,7 +9638,7 @@ nv.models.stackedAreaChart = function() {
         }
 
         g.select('.nv-legendWrap')
-            .attr('transform', 'translate(' + ( availableWidth / 2 ) + ',' + (-margin.top) +')');
+            .attr('transform', 'translate(' + ( availableWidth * 1 / 3 ) + ',' + (-margin.top) +')');
       }
 
       //------------------------------------------------------------
@@ -9645,11 +9654,24 @@ nv.models.stackedAreaChart = function() {
           { key: 'Expanded', disabled: stacked.offset() != 'expand' }
         ];
 
-        controls.width(280).color(['#444', '#444', '#444']);
+        controls
+          .width( Math.min(280, availableWidth * 1 / 3) )
+          .color(['#444', '#444', '#444']);
+
         g.select('.nv-controlsWrap')
             .datum(controlsData)
-            .attr('transform', 'translate(0,' + (-margin.top) +')')
             .call(controls);
+
+
+        if ( margin.top != Math.max(controls.height(), legend.height()) ) {
+          margin.top = Math.max(controls.height(), legend.height());
+          availableHeight = (height || parseInt(container.style('height')) || 400)
+                             - margin.top - margin.bottom;
+        }
+
+
+        g.select('.nv-controlsWrap')
+            .attr('transform', 'translate(0,' + (-margin.top) +')');
       }
 
       //------------------------------------------------------------
@@ -9771,10 +9793,12 @@ nv.models.stackedAreaChart = function() {
   stacked.dispatch.on('tooltipShow', function(e) {
     //disable tooltips when value ~= 0
     //// TODO: consider removing points from voronoi that have 0 value instead of this hack
+    /*
     if (!Math.round(stacked.y()(e.point) * 100)) {  // 100 will not be good for very small numbers... will have to think about making this valu dynamic, based on data range
       setTimeout(function() { d3.selectAll('.point.hover').classed('hover', false) }, 0);
       return false;
     }
+   */
 
     e.pos = [e.pos[0] + margin.left, e.pos[1] + margin.top],
     dispatch.tooltipShow(e);
