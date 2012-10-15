@@ -272,6 +272,27 @@ nv.utils.defaultColor = function() {
 }
 
 
+// Returns a color function that takes the result of 'getKey' for each series and
+// looks for a corresponding color from the dictionary,
+nv.utils.customTheme = function(dictionary, getKey, defaultColors) {
+  getKey = getKey || function(series) { return series.key }; // use default series.key if getKey is undefined
+  defaultColors = defaultColors || d3.scale.category20().range(); //default color function
+
+  var defIndex = defaultColors.length; //current default color (going in reverse)
+
+  return function(series, index) {
+    var key = getKey(series);
+
+    if (!defIndex) defIndex = defaultColors.length; //used all the default colors, start over
+
+    if (typeof dictionary[key] !== "undefined")
+      return (typeof dictionary[key] === "function") ? dictionary[key]() : dictionary[key];
+    else
+      return defaultColors[--defIndex]; // no match in dictionary, use default color
+  }
+}
+
+
 
 // From the PJAX example on d3js.org, while this is not really directly needed
 // it's a very cool method for doing pjax, I may expand upon it a little bit,
@@ -311,6 +332,7 @@ nv.models.axis = function() {
     , highlightZero = true
     , rotateLabels = 0
     , rotateYLabel = true
+    , staggerLabels = false
     , ticks = null
     ;
 
@@ -401,8 +423,8 @@ nv.models.axis = function() {
         case 'bottom':
           var xLabelMargin = 30;
           var maxTextWidth = 30;
+          var xTicks = g.selectAll('g').select("text");
           if (rotateLabels%360) {
-            var xTicks = g.selectAll('g').select("text");
             //Calculate the longest xTick width
             xTicks.each(function(d,i){
               var width = this.getBBox().width;
@@ -445,6 +467,10 @@ nv.models.axis = function() {
                   return 'translate(' + scale.range()[i] + ',0)'
                 });
           }
+          if (staggerLabels)
+            xTicks
+                .attr('transform', function(d,i) { return 'translate(0,' + (i % 2 == 0 ? '0' : '12') + ')' });
+
           break;
         case 'right':
           axisLabel.enter().append('text').attr('class', 'nv-axislabel')
@@ -639,6 +665,13 @@ nv.models.axis = function() {
     rotateLabels = _;
     return chart;
   }
+
+  chart.staggerLabels = function(_) {
+    if (!arguments.length) return staggerLabels;
+    staggerLabels = _;
+    return chart;
+  };
+
 
   //============================================================
 
@@ -2293,7 +2326,7 @@ nv.models.discreteBarChart = function() {
     , yAxis = nv.models.axis()
     ;
 
-  var margin = {top: 10, right: 10, bottom: 50, left: 60}
+  var margin = {top: 15, right: 10, bottom: 50, left: 60}
     , width = null
     , height = null
     , color = nv.utils.getColor()
@@ -3884,6 +3917,9 @@ nv.models.linePlusBarChart = function() {
     , dispatch = d3.dispatch('tooltipShow', 'tooltipHide')
     ;
 
+  lines
+    .clipEdge(false)
+    ;
   xAxis
     .orient('bottom')
     .tickPadding(5)
@@ -4055,7 +4091,6 @@ nv.models.linePlusBarChart = function() {
       lines
         .width(availableWidth)
         .height(availableHeight)
-        .clipEdge(true)
         .color(data.map(function(d,i) {
           return d.color || color(d, i);
         }).filter(function(d,i) { return !data[i].disabled && !data[i].bar }))
