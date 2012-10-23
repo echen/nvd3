@@ -9471,15 +9471,15 @@ nv.models.sparkline = function() {
             })
             .filter(function(d) { return typeof d.pointIndex != 'undefined' })
           });
-      points.enter().append('circle').attr('class', 'nv-point');
+      points.enter().append('circle');
       points.exit().remove();
       points
           .attr('cx', function(d,i) { return x(getX(d,d.pointIndex)) })
           .attr('cy', function(d,i) { return y(getY(d,d.pointIndex)) })
           .attr('r', 2)
           .attr('class', function(d,i) {
-            return getX(d, d.pointIndex) == x.domain()[1] ? 'nv-currentValue' :
-                   getY(d, d.pointIndex) == y.domain()[0] ? 'nv-minValue' : 'nv-maxValue'
+            return getX(d, d.pointIndex) == x.domain()[1] ? 'nv-point nv-currentValue' :
+                   getY(d, d.pointIndex) == y.domain()[0] ? 'nv-point nv-minValue' : 'nv-point nv-maxValue'
           });
     });
 
@@ -9736,7 +9736,7 @@ nv.models.sparklinePlus = function() {
       function sparklineHover() {
         if (paused) return;
 
-        var pos = d3.event.offsetX - margin.left;
+        var pos = d3.mouse(this)[0] - margin.left;
 
         function getClosestIndex(data, x) {
           var distance = Math.abs(sparkline.x()(data[0], 0) - x);
