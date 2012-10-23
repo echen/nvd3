@@ -73,6 +73,7 @@ nv.models.cumulativeLineChart = function() {
     d.i = Math.round(dx.invert(d.x));
 
     d3.select(this).attr('transform', 'translate(' + dx(d.i) + ',0)');
+    chart.update();
   }
 
   function dragEnd(d,i) {
@@ -170,6 +171,7 @@ nv.models.cumulativeLineChart = function() {
 
       gEnter.append('g').attr('class', 'nv-x nv-axis');
       gEnter.append('g').attr('class', 'nv-y nv-axis');
+      gEnter.append('g').attr('class', 'nv-background');
       gEnter.append('g').attr('class', 'nv-linesWrap');
       gEnter.append('g').attr('class', 'nv-legendWrap');
       gEnter.append('g').attr('class', 'nv-controlsWrap');
@@ -224,6 +226,11 @@ nv.models.cumulativeLineChart = function() {
       //------------------------------------------------------------
       // Main Chart Component(s)
 
+      gEnter.select('.nv-background')
+        .append('rect')
+          .attr('width', availableWidth)
+          .attr('height', availableHeight);
+
       lines
         //.x(function(d) { return d.x })
         .y(function(d) { return d.display.y })
@@ -238,7 +245,8 @@ nv.models.cumulativeLineChart = function() {
       var linesWrap = g.select('.nv-linesWrap')
           .datum(data.filter(function(d) { return !d.disabled }))
 
-      d3.transition(linesWrap).call(lines);
+      //d3.transition(linesWrap).call(lines);
+      linesWrap.call(lines);
 
 
       var indexLine = linesWrap.selectAll('.nv-indexLine')
@@ -286,11 +294,33 @@ nv.models.cumulativeLineChart = function() {
       // Event Handling/Dispatching (in chart's scope)
       //------------------------------------------------------------
 
+
+      function updateZero() {
+        indexLine
+          .data([index]);
+
+        chart.update();
+      }
+
+      g.select('.nv-background rect')
+          .on('click', function() {
+            index.x = d3.mouse(this)[0];
+            index.i = Math.round(dx.invert(index.x));
+            updateZero();
+          });
+
+      lines.dispatch.on('elementClick', function(e) {
+        index.i = e.pointIndex;
+        index.x = dx(index.i);
+        updateZero();
+      });
+
       controls.dispatch.on('legendClick', function(d,i) { 
         d.disabled = !d.disabled;
         rescaleY = !d.disabled;
 
-        selection.transition().call(chart);
+        //selection.transition().call(chart);
+        selection.call(chart);
       });
 
 
@@ -305,7 +335,8 @@ nv.models.cumulativeLineChart = function() {
           });
         }
 
-        selection.transition().call(chart);
+        //selection.transition().call(chart);
+        selection.call(chart);
       });
 
 /*
