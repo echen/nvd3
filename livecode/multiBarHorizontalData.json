@@ -1,8 +1,8 @@
 [
   {
-    key: 'Series1',
-    color: '#d62728',
-    values: [
+    "key": 'Series1',
+    "color": '#d62728',
+    "values": [
       { 
         "label" : "Group A" ,
         "value" : -1.8746444827653
@@ -42,9 +42,9 @@
     ]
   },
   {
-    key: 'Series2',
-    color: '#1f77b4',
-    values: [
+    "key": 'Series2',
+    "color": '#1f77b4',
+    "values": [
       { 
         "label" : "Group A" ,
         "value" : 25.307646510375
