@@ -2834,8 +2834,7 @@ nv.models.indentedTree = function() {
 
       //------------------------------------------------------------
       // Display No Data message if there's nothing to show.
-
-      if (!data[0].key) data[0].key = noData;
+      if (!data[0]) data[0] = {key: noData};
 
       //------------------------------------------------------------
 
@@ -7804,7 +7803,7 @@ nv.models.scatter = function() {
     , z           = d3.scale.linear() //linear because d3.svg.shape.size is treated as area
     , getX        = function(d) { return d.x } // accessor to get the x value
     , getY        = function(d) { return d.y } // accessor to get the y value
-    , getSize     = function(d) { return d.size } // accessor to get the point size
+    , getSize     = function(d) { return d.size || 1} // accessor to get the point size
     , getShape    = function(d) { return d.shape || 'circle' } // accessor to get point shape
     , forceX      = [] // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
     , forceY      = [] // List of numbers to Force into the Y scale
@@ -8452,8 +8451,6 @@ nv.models.scatterChart = function() {
       gEnter.append('g').attr('class', 'nv-legendWrap');
       gEnter.append('g').attr('class', 'nv-controlsWrap');
 
-      wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
       //------------------------------------------------------------
 
 
@@ -8494,6 +8491,9 @@ nv.models.scatterChart = function() {
       //------------------------------------------------------------
 
 
+      wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
       //------------------------------------------------------------
       // Main Chart Component(s)
 
@@ -8528,7 +8528,7 @@ nv.models.scatterChart = function() {
 
       xAxis
           .scale(x)
-          .ticks( xAxis.ticks() ? xAxis.ticks() : availableWidth / 100 )
+          .ticks( xAxis.ticks() && xAxis.ticks().length ? xAxis.ticks() : availableWidth / 100 )
           .tickSize( -availableHeight , 0);
 
       g.select('.nv-x.nv-axis')
@@ -8538,7 +8538,7 @@ nv.models.scatterChart = function() {
 
       yAxis
           .scale(y)
-          .ticks( yAxis.ticks() ? yAxis.ticks() : availableHeight / 36 )
+          .ticks( yAxis.ticks() && yAxis.ticks().length ? yAxis.ticks() : availableHeight / 36 )
           .tickSize( -availableWidth, 0);
 
       g.select('.nv-y.nv-axis')
@@ -9574,7 +9574,7 @@ nv.models.sparklinePlus = function() {
 
   var sparkline = nv.models.sparkline();
 
-  var margin = {top: 15, right: 40, bottom: 3, left: 40}
+  var margin = {top: 15, right: 60, bottom: 3, left: 50}
     , width = null
     , height = null
     , x
