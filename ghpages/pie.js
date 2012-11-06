@@ -37,35 +37,35 @@ function exampleData() {
     key: "Cumulative Return",
     values: [
       { 
-        "label" : "CDS / Options" ,
+        "label": "One",
         "value" : 29.765957771107
       } , 
       { 
-        "label" : "Cash" , 
+        "label": "Two",
         "value" : 0
       } , 
       { 
-        "label" : "Corporate Bonds" , 
+        "label": "Three",
         "value" : 32.807804682612
       } , 
       { 
-        "label" : "Equity" , 
+        "label": "Four",
         "value" : 196.45946739256
       } , 
       { 
-        "label" : "Index Futures" ,
+        "label": "Five",
         "value" : 0.19434030906893
       } , 
       { 
-        "label" : "Options" , 
+        "label": "Six",
         "value" : 98.079782601442
       } , 
       { 
-        "label" : "Preferred" , 
+        "label": "Seven",
         "value" : 13.925743130903
       } , 
       { 
-        "label" : "Not Available" , 
+        "label": "Eight",
         "value" : 5.1387322875705
       }
     ]

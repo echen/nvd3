@@ -7,12 +7,11 @@ nv.models.sparklinePlus = function() {
 
   var sparkline = nv.models.sparkline();
 
-  var margin = {top: 15, right: 40, bottom: 3, left: 40}
+  var margin = {top: 15, right: 60, bottom: 3, left: 50}
     , width = null
     , height = null
     , x
     , y
-    , color = nv.utils.defaultColor()
     , index
     , paused = false
     , xTickFormat = d3.format(',r')
@@ -97,7 +96,6 @@ nv.models.sparklinePlus = function() {
         .height(availableHeight);
 
       sparklineWrap
-          .style('stroke', function(d, i){ return d.color || color(d, i) })
           .call(sparkline);
 
       //------------------------------------------------------------
@@ -171,7 +169,7 @@ nv.models.sparklinePlus = function() {
       function sparklineHover() {
         if (paused) return;
 
-        var pos = d3.event.offsetX - margin.left;
+        var pos = d3.mouse(this)[0] - margin.left;
 
         function getClosestIndex(data, x) {
           var distance = Math.abs(sparkline.x()(data[0], 0) - x);
@@ -203,7 +201,7 @@ nv.models.sparklinePlus = function() {
   // expose chart's sub-components
   chart.sparkline = sparkline;
 
-  d3.rebind(chart, sparkline, 'x', 'y', 'xScale', 'yScale');
+  d3.rebind(chart, sparkline, 'x', 'y', 'xScale', 'yScale', 'color');
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
