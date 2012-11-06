@@ -19,7 +19,6 @@ nv.models.bullet = function() {
     , width = 380
     , height = 30
     , tickFormat = null
-    , color = nv.utils.getColor(['#1f77b4'])
     , dispatch = d3.dispatch('elementMouseover', 'elementMouseout')
     ;
 
@@ -30,7 +29,9 @@ nv.models.bullet = function() {
     selection.each(function(d, i) {
       var availableWidth = width - margin.left - margin.right,
           availableHeight = height - margin.top - margin.bottom,
-          container = d3.select(this);
+          container = d3.select(this),
+          mainGroup = nv.log(this.parentNode.parentNode).getAttribute('transform'),
+          heightFromTop = nv.log(parseInt(mainGroup.replace(/.*,(\d+)\)/,"$1"))); //TODO: There should be a smarter way to get this value
 
       var rangez = ranges.call(this, d, i).slice().sort(d3.descending),
           markerz = markers.call(this, d, i).slice().sort(d3.descending),
@@ -41,8 +42,9 @@ nv.models.bullet = function() {
       // Setup Scales
 
       // Compute the new x-scale.
+      var MaxX = Math.max(rangez[0] ? rangez[0]:0 , markerz[0] ? markerz[0] : 0 , measurez[0] ? measurez[0] : 0)
       var x1 = d3.scale.linear()
-          .domain([0, Math.max(rangez[0], markerz[0], measurez[0])])  // TODO: need to allow forceX and forceY, and xDomain, yDomain
+          .domain([0, MaxX]).nice()  // TODO: need to allow forceX and forceY, and xDomain, yDomain
           .range(reverse ? [availableWidth, 0] : [0, availableWidth]);
 
       // Retrieve the old x-scale, if this is an update.
@@ -87,7 +89,7 @@ nv.models.bullet = function() {
               dispatch.elementMouseover({
                 value: d,
                 label: (i <= 0) ? 'Maximum' : (i > 1) ? 'Minimum' : 'Mean', //TODO: make these labels a variable
-                pos: [x1(d), availableHeight/2]
+                pos: [x1(d), heightFromTop]
               })
           })
           .on('mouseout', function(d,i) { 
@@ -109,7 +111,6 @@ nv.models.bullet = function() {
 
       measure.enter().append('rect')
           .attr('class', function(d, i) { return 'nv-measure nv-s' + i; })
-          .style('fill', function(d,i) { return color(d,i ) })
           .attr('width', w0)
           .attr('height', availableHeight / 3)
           .attr('x', reverse ? x0 : 0)
@@ -118,7 +119,7 @@ nv.models.bullet = function() {
               dispatch.elementMouseover({
                 value: d,
                 label: 'Current', //TODO: make these labels a variable
-                pos: [x1(d), availableHeight/2]
+                pos: [x1(d), heightFromTop]
               })
           })
           .on('mouseout', function(d) { 
@@ -149,7 +150,7 @@ nv.models.bullet = function() {
               dispatch.elementMouseover({
                 value: d,
                 label: 'Previous',
-                pos: [x1(d), availableHeight/2]
+                pos: [x1(d), heightFromTop]
               })
           })
           .on('mouseout', function(d,i) {
@@ -237,12 +238,6 @@ nv.models.bullet = function() {
   chart.tickFormat = function(_) {
     if (!arguments.length) return tickFormat;
     tickFormat = _;
-    return chart;
-  };
-
-  chart.color = function(_) {
-    if (!arguments.length) return color;
-    color = nv.utils.getColor(_);
     return chart;
   };
 
