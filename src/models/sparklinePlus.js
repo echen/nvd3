@@ -7,7 +7,7 @@ nv.models.sparklinePlus = function() {
 
   var sparkline = nv.models.sparkline();
 
-  var margin = {top: 15, right: 60, bottom: 3, left: 50}
+  var margin = {top: 15, right: 100, bottom: 10, left: 50}
     , width = null
     , height = null
     , x
@@ -16,6 +16,7 @@ nv.models.sparklinePlus = function() {
     , paused = false
     , xTickFormat = d3.format(',r')
     , yTickFormat = d3.format(',.2f')
+    , showValue = true
     , noData = "No Data Available."
     ;
 
@@ -31,6 +32,7 @@ nv.models.sparklinePlus = function() {
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
+      var currentValue = sparkline.y()(data[data.length-1], data.length-1);
 
       chart.update = function() { chart(selection) };
       chart.container = this;
@@ -79,6 +81,7 @@ nv.models.sparklinePlus = function() {
       var g = wrap.select('g');
 
       gEnter.append('g').attr('class', 'nv-sparklineWrap');
+      gEnter.append('g').attr('class', 'nv-valueWrap');
       gEnter.append('g').attr('class', 'nv-hoverArea');
 
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -99,6 +102,22 @@ nv.models.sparklinePlus = function() {
           .call(sparkline);
 
       //------------------------------------------------------------
+
+
+      var valueWrap = g.select('.nv-valueWrap');
+
+      var value = valueWrap.selectAll('.nv-currentValue')
+          .data([currentValue]);
+
+      value.enter().append('text').attr('class', 'nv-currentValue')
+          .attr('dx', 8)
+          .attr('dy', '.65em');
+
+      value
+          .attr('x', availableWidth)
+          .attr('y', function(d) { return y(d) })
+          .style('fill', sparkline.color()(data[data.length-1], data.length-1))
+          .text(yTickFormat(currentValue));
 
 
 
@@ -233,6 +252,12 @@ nv.models.sparklinePlus = function() {
   chart.yTickFormat = function(_) {
     if (!arguments.length) return yTickFormat;
     yTickFormat = _;
+    return chart;
+  };
+
+  chart.showValue = function(_) {
+    if (!arguments.length) return showValue;
+    showValue = _;
     return chart;
   };
 

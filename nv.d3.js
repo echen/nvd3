@@ -552,8 +552,8 @@ nv.models.axis = function() {
           .text(function(d) { return d });
 
 
-      //check if max and min overlap other values, if so, hide the values that overlap
       if (showMaxMin && (axis.orient() === 'left' || axis.orient() === 'right')) {
+        //check if max and min overlap other values, if so, hide the values that overlap
         g.selectAll('g') // the g's wrapping each tick
             .each(function(d,i) {
               if (scale(d) < scale.range()[1] + 10 || scale(d) > scale.range()[0] - 10) { // 10 is assuming text height is 16... if d is 0, leave it!
@@ -563,6 +563,12 @@ nv.models.axis = function() {
                   d3.select(this).select('text').remove(); // Don't remove the ZERO line!!
               }
             });
+
+        //if Max and Min = 0 only show min, Issue #281
+        if (scale.domain()[0] == scale.domain()[1] && scale.domain()[0] == 0)
+          wrap.selectAll('g.nv-axisMaxMin')
+            .style('opacity', function(d,i) { return !i ? 1 : 0 });
+        
       }
 
       if (showMaxMin && (axis.orient() === 'top' || axis.orient() === 'bottom')) {
@@ -851,8 +857,15 @@ nv.models.historicalBar = function() {
 
 
       d3.transition(bars)
-          .attr('y', function(d,i) {  return y(Math.max(0, getY(d,i))) })
-          .attr('height', function(d,i) { return Math.abs(y(getY(d,i)) - y(0)) });
+          //.attr('y', function(d,i) {  return y(Math.max(0, getY(d,i))) })
+          .attr('y', function(d,i) {
+            return getY(d,i) < 0 ?
+                    y(0) :
+                    y(0) - y(getY(d,i)) < 1 ?
+                      y(0) - 1 :
+                      y(getY(d,i))
+          })
+          .attr('height', function(d,i) { return Math.max(Math.abs(y(getY(d,i)) - y(0)),1) });
           //.order();  // not sure if this makes any sense for this model
 
     });
@@ -1279,9 +1292,7 @@ nv.models.bulletChart = function() {
       //------------------------------------------------------------
       // Display No Data message if there's nothing to show.
 
-      /*
-      // Disabled until I figure out a better way to check for no data with the bullet chart
-      if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
+      if (!d || !ranges.call(this, d, i)) {
         var noDataText = container.selectAll('.nv-noData').data([noData]);
 
         noDataText.enter().append('text')
@@ -1291,14 +1302,13 @@ nv.models.bulletChart = function() {
 
         noDataText
           .attr('x', margin.left + availableWidth / 2)
-          .attr('y', margin.top + availableHeight / 2)
+          .attr('y', 18 + margin.top + availableHeight / 2)
           .text(function(d) { return d });
 
         return chart;
       } else {
         container.selectAll('.nv-noData').remove();
       }
-      */
 
       //------------------------------------------------------------
 
@@ -1390,7 +1400,7 @@ nv.models.bulletChart = function() {
 
       // Update the tick groups.
       var tick = g.selectAll('g.nv-tick')
-          .data(x1.ticks( availableWidth / 100 ), function(d) {
+          .data(x1.ticks( availableWidth / 50 ), function(d) {
             return this.textContent || format(d);
           });
 
@@ -1593,7 +1603,7 @@ nv.models.cumulativeLineChart = function() {
 
   xAxis
     .orient('bottom')
-    .tickPadding(5)
+    .tickPadding(7)
     ;
   yAxis
     .orient('left')
@@ -2242,13 +2252,20 @@ nv.models.discreteBar = function() {
           .attr('width', x.rangeBand() / data.length);
       d3.transition(bars)
         //.delay(function(d,i) { return i * 1200 / data[0].values.length })
-		  .attr('transform', function(d,i) {
-              return 'translate(' + x(getX(d,i)) + ', ' + (getY(d,i) < 0 ? y(0) : y(getY(d,i))) + ')'
+          .attr('transform', function(d,i) {
+            var left = x(getX(d,i)),
+                top = getY(d,i) < 0 ?
+                        y(0) :
+                        y(0) - y(getY(d,i)) < 1 ?
+                          y(0) - 1 : //make 1 px positive bars show up above y=0
+                          y(getY(d,i));
+
+              return 'translate(' + left + ', ' + top + ')'
           })
-		  .select('rect')
-		    .attr('height', function(d,i) {
-			   return Math.abs(y(getY(d,i)) - y(0))
-		     });
+        .select('rect')
+          .attr('height', function(d,i) {
+            return  Math.max(Math.abs(y(getY(d,i)) - y(0)) || 1)
+          });
 
 
       //store old scales for use in transitions on update
@@ -3618,7 +3635,7 @@ nv.models.lineChart = function() {
 
   xAxis
     .orient('bottom')
-    .tickPadding(5)
+    .tickPadding(7)
     ;
   yAxis
     .orient('left')
@@ -3960,7 +3977,7 @@ nv.models.linePlusBarChart = function() {
     ;
   xAxis
     .orient('bottom')
-    .tickPadding(5)
+    .tickPadding(7)
     ;
   y1Axis
     .orient('left')
@@ -4827,6 +4844,12 @@ nv.models.lineWithFocusChart = function() {
     return chart;
   };
 
+  chart.height2 = function(_) {
+    if (!arguments.length) return height2;
+    height2 = _;
+    return chart;
+  };
+
   chart.color = function(_) {
     if (!arguments.length) return color;
     color =nv.utils.getColor(_);
@@ -5109,7 +5132,7 @@ nv.models.multiBar = function() {
               return y(getY(d,i) + (stacked ? d.y0 : 0));
             })
             .attr('height', function(d,i) {
-              return Math.abs(y(d.y + (stacked ? d.y0 : 0)) - y((stacked ? d.y0 : 0)))
+              return Math.max(Math.abs(y(d.y + (stacked ? d.y0 : 0)) - y((stacked ? d.y0 : 0))),1);
             })
             .each('end', function() {
               d3.transition(d3.select(this))
@@ -5129,11 +5152,13 @@ nv.models.multiBar = function() {
               d3.transition(d3.select(this))
                 .attr('y', function(d,i) {
                   return getY(d,i) < 0 ?
-                    y(0) :
-                    y(getY(d,i))
+                          y(0) :
+                          y(0) - y(getY(d,i)) < 1 ?
+                            y(0) - 1 :
+                            y(getY(d,i))
                 })
                 .attr('height', function(d,i) {
-                  return Math.abs(y(getY(d,i)) - y(0))
+                  return Math.max(Math.abs(y(getY(d,i)) - y(0)),1);
                 });
             })
 
@@ -5290,7 +5315,7 @@ nv.models.multiBarChart = function() {
     ;
   xAxis
     .orient('bottom')
-    .tickPadding(5)
+    .tickPadding(7)
     .highlightZero(false)
     .showMaxMin(false)
     .tickFormat(function(d) { return d })
@@ -5896,7 +5921,7 @@ nv.models.multiBarHorizontal = function() {
           .select('rect')
             .attr('height', x.rangeBand() / data.length )
             .attr('width', function(d,i) {
-              return Math.abs(y(getY(d,i)) - y(0))
+              return Math.max(Math.abs(y(getY(d,i)) - y(0)),1)
             });
 
 
@@ -7949,6 +7974,9 @@ nv.models.scatter = function() {
 
         //inject series and point index for reference into voronoi
         if (useVoronoi === true) {
+          // Issue #283 - Adding 2 dummy points to the voronoi b/c voronoi requires min 3 points to work
+          vertices.push([x.range()[0] - 20, y.range()[0] - 20, null, null]);
+          vertices.push([x.range()[1] + 20, y.range()[1] + 20, null, null]);
           var voronoi = d3.geom.voronoi(vertices).map(function(d, i) {
               return {
                 'data': d,
@@ -9454,11 +9482,20 @@ nv.models.sparkline = function() {
       // TODO: Add CURRENT data point (Need Min, Mac, Current / Most recent)
       var points = wrap.selectAll('circle.nv-point')
           .data(function(data) {
-            return data.map(function(d,i) {
-              if (y.domain().indexOf(getY(d,i)) != -1 || getX(d,i) == x.domain()[1]) d.pointIndex = i;
-              return d;
-            })
-            .filter(function(d) { return typeof d.pointIndex != 'undefined' })
+              var yValues = data.map(function(d, i) { return getY(d,i); });
+              function pointIndex(index) {
+                  if (index != -1) {
+	              var result = data[index];
+                      result.pointIndex = index;
+                      return result;
+                  } else {
+                      return null;
+                  }
+              }
+              var maxPoint = pointIndex(yValues.lastIndexOf(y.domain()[1])),
+                  minPoint = pointIndex(yValues.indexOf(y.domain()[0])),
+                  currentPoint = pointIndex(yValues.length - 1);
+              return [minPoint, maxPoint, currentPoint].filter(function (d) {return d != null;});
           });
       points.enter().append('circle');
       points.exit().remove();
@@ -9563,7 +9600,7 @@ nv.models.sparklinePlus = function() {
 
   var sparkline = nv.models.sparkline();
 
-  var margin = {top: 15, right: 60, bottom: 3, left: 50}
+  var margin = {top: 15, right: 100, bottom: 10, left: 50}
     , width = null
     , height = null
     , x
@@ -9572,6 +9609,7 @@ nv.models.sparklinePlus = function() {
     , paused = false
     , xTickFormat = d3.format(',r')
     , yTickFormat = d3.format(',.2f')
+    , showValue = true
     , noData = "No Data Available."
     ;
 
@@ -9587,6 +9625,7 @@ nv.models.sparklinePlus = function() {
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
+      var currentValue = sparkline.y()(data[data.length-1], data.length-1);
 
       chart.update = function() { chart(selection) };
       chart.container = this;
@@ -9635,6 +9674,7 @@ nv.models.sparklinePlus = function() {
       var g = wrap.select('g');
 
       gEnter.append('g').attr('class', 'nv-sparklineWrap');
+      gEnter.append('g').attr('class', 'nv-valueWrap');
       gEnter.append('g').attr('class', 'nv-hoverArea');
 
       wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -9655,6 +9695,22 @@ nv.models.sparklinePlus = function() {
           .call(sparkline);
 
       //------------------------------------------------------------
+
+
+      var valueWrap = g.select('.nv-valueWrap');
+
+      var value = valueWrap.selectAll('.nv-currentValue')
+          .data([currentValue]);
+
+      value.enter().append('text').attr('class', 'nv-currentValue')
+          .attr('dx', 8)
+          .attr('dy', '.65em');
+
+      value
+          .attr('x', availableWidth)
+          .attr('y', function(d) { return y(d) })
+          .style('fill', sparkline.color()(data[data.length-1], data.length-1))
+          .text(yTickFormat(currentValue));
 
 
 
@@ -9789,6 +9845,12 @@ nv.models.sparklinePlus = function() {
   chart.yTickFormat = function(_) {
     if (!arguments.length) return yTickFormat;
     yTickFormat = _;
+    return chart;
+  };
+
+  chart.showValue = function(_) {
+    if (!arguments.length) return showValue;
+    showValue = _;
     return chart;
   };
 
@@ -10170,7 +10232,7 @@ nv.models.stackedAreaChart = function() {
 
   xAxis
     .orient('bottom')
-    .tickPadding(5)
+    .tickPadding(7)
     ;
   yAxis
     .orient('left')
