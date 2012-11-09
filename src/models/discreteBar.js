@@ -194,13 +194,20 @@ nv.models.discreteBar = function() {
           .attr('width', x.rangeBand() / data.length);
       d3.transition(bars)
         //.delay(function(d,i) { return i * 1200 / data[0].values.length })
-		  .attr('transform', function(d,i) {
-              return 'translate(' + x(getX(d,i)) + ', ' + (getY(d,i) < 0 ? y(0) : y(getY(d,i))) + ')'
+          .attr('transform', function(d,i) {
+            var left = x(getX(d,i)),
+                top = getY(d,i) < 0 ?
+                        y(0) :
+                        y(0) - y(getY(d,i)) < 1 ?
+                          y(0) - 1 : //make 1 px positive bars show up above y=0
+                          y(getY(d,i));
+
+              return 'translate(' + left + ', ' + top + ')'
           })
-		  .select('rect')
-		    .attr('height', function(d,i) {
-			   return Math.abs(y(getY(d,i)) - y(0))
-		     });
+        .select('rect')
+          .attr('height', function(d,i) {
+            return  Math.max(Math.abs(y(getY(d,i)) - y(0)) || 1)
+          });
 
 
       //store old scales for use in transitions on update
