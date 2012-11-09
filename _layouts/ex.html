@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>NVD3.js :: {% if page.title %} {{ page.title }}{% endif %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Bob Monteverde">
+
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <link href="../css/common.css" rel="stylesheet">
+    <link href="../src/nv.d3.css" rel="stylesheet">
+    <link href="../css/syntax.css" rel="stylesheet">
+
+    <script src="../lib/d3.v2.js"></script>
+    <script src="../lib/fisheye.js"></script>
+    <script src="../nv.d3.js"></script>
+
+    <script src="../js/data/stream_layers.js"></script>
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript">
+      // redirect to nvd3.com if accessed from novus.github.com/nvd3 so that disqus comments work automatically
+      if (window.location.hostname != 'nvd3.com' && window.location.hostname != 'localhost')
+        window.location = 'http://nvd3.com' + window.location.pathname.replace('/nvd3','');
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-33058059-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="http://nvd3.com">NVD3.js</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="http://nvd3.com"><i class="icon-white icon-home"></i> Home</a></li>
+              <li class="active"><a href="http://nvd3.com/ghpages/examples.html"><i class="icon-white icon-picture"></i> Examples</a></li>
+              <li><a href="http://nvd3.com/livecode"><i class="icon-white icon-play-circle"></i> Live Code</a></li>
+              <li><a href="http://github.com/novus/nvd3"><i class="icon-white icon-book"></i> Source</a></li>
+            </ul>
+            <ul class="nav pull-right">
+              <li><p class="navbar-text"><i class="icon-white icon-download"></i> Downloads:</p></li>
+              <li>
+                <div class="btn-group">
+                  <a class="btn btn-small btn-primary" href="https://github.com/novus/nvd3/zipball/master">ZIP</a>
+                  <a class="btn btn-small btn-primary" href="https://github.com/novus/nvd3/tarball/master">TAR.GZ</a>
+                </div>
+              </li>
+            </ul>
+          </div><!--/.nav-collapse -->
+
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="row">
+        <div class="span3">
+          <div class="well">
+            <ul class="nav nav-list">
+              <li class="nav-header">
+                Complete Charts
+              </li>
+              <li>
+                <a href="../ghpages/line.html">Simple Line</a>
+              </li>
+              <li>
+                <a href="../ghpages/scatter.html">Scatter / Bubble</a>
+              </li>
+              <li>
+                <a href="../ghpages/stackedArea.html">Stacked / Stream / Expanded Area</a>
+              </li>
+              <li>
+                <a href="../ghpages/discreteBar.html">Discrete Bar</a>
+              </li>
+              <li>
+                <a href="../ghpages/multiBar.html">Grouped / Stacked Multi-Bar</a>
+              </li>
+              <li>
+                <a href="../ghpages/multiBarHorizontal.html">Horizontal Grouped Bar</a>
+              </li>
+              <li>
+                <a href="../ghpages/linePlusBar.html">Line and Bar Combo</a>
+              </li>
+              <li>
+                <a href="../ghpages/cumulativeLine.html">Cumulative Line</a>
+              </li>
+              <li>
+                <a href="../ghpages/lineWithFocus.html">Line with View Finder</a>
+              </li>
+              <li>
+                <a href="../ghpages/pie.html">Pie Chart</a>
+              </li>
+              <li>
+                <a href="../ghpages/bullet.html">Bullet Chart</a>
+              </li>
+              <li>
+                <a href="../ghpages/indentedtree.html">HTML Indented Tree</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="span9">
+
+          {{ content }}
+
+          <div id="disqus_thread"></div>
+
+          <script type="text/javascript">
+            var disqus_shortname = 'nvd3';
+            (function() {
+              var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+              dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+              (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+          </script>
+          <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+          <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </div>
+      </div>
+
+
+      <hr>
+
+      <footer>
+      <p>&copy; 2012 <a href="http://www.novus.com">Novus Partners</a></p>
+      </footer>
+
+    </div> <!-- /container -->
+
+    <script src="../js/lib/jquery.min.js"></script>
+    <script src="../js/lib/bootstrap.min.js"></script>
+
+
+  </body>
+</html>
