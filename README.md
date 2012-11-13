@@ -15,7 +15,7 @@ A reusable chart library for d3.JS by Bob Monteverde
 
 ---
 
-If one of [the existing models](https://github.com/novus/nvd3/tree/master/src/models) doesn't meet your needs, fork the project, implement the model and an example using it, send us a pull request, for consideration for inclusion in the project.
+If one of [the existing models](https://github.com/nvd3/nvd3/tree/master/src/models) doesn't meet your needs, fork the project, implement the model and an example using it, send us a pull request, for consideration for inclusion in the project.
 
 ---
 
