@@ -1,10 +1,16 @@
-# nvd3 - v0.0.1
+NVd3 - reusable chart library for d3.js
+-----------------------------------------
 
-***This is the last open source state of NVD3 by Novus Partners.  Novus may be closing source of further development, this may become the initial state of a new open source d3 reusable chart library.
+***This was created from the last open source state of NVD3 by Novus Partners.  It was created from a branch by https://github.com/GerHobbelt  This organization was created to allow development to continue.  
+
+If you are interested in participating, please send a pull-request, anyone that is commited will be added as an admin to the org. 
+
+Why not Fork nvd3?
+-------------------------------------
+When a project is abandoned by the original creator on Github, it creates all kinds of issues that prevent forward progress. There is no central place to submit issues, people googling/searching find the old dead repository and "Star" that such that no-one finds the maintained version.  This is an attempt to create a maintained version.  
+
 
 A reusable chart library for d3.JS by Bob Monteverde
-
-Currently in an early stage of development, but will be a very active project.  It may change quite a bit from its current state, but will always try to follow the style in which d3.js was done.
 
 
 ---
