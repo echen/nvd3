@@ -5,7 +5,7 @@ title: Examples
 
 <div class="alert alert-info">
 For the most <strong>up to date list of examples</strong>, please <strong>clone the
-<a href="https://github.com/novus/nvd3">Github Repository</a></strong>.
+<a href="https://github.com/nvd3/nvd3">Github Repository</a></strong>.
 </div>
 
 <ul class="thumbnails">
